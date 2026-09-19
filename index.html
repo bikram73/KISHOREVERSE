@@ -583,6 +583,7 @@
     const DEFAULT_PLAYLIST_URL = `https://www.youtube.com/playlist?list=${DEFAULT_PLAYLIST}`;
     const BENGALI_PLAYLIST = "PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv";
     const BENGALI_PLAYLIST_URL = `https://youtube.com/playlist?list=${BENGALI_PLAYLIST}`;
+    const YOUTUBE_PLAYER_HOST = "https://www.youtube-nocookie.com";
     const DEFAULT_BG = "./assets/Kishore_Kumar.png";
     const STORAGE_KEY = "kishoreverse-source";
     const BG_DB = "kishoreverse-bg";
@@ -1077,6 +1078,7 @@
       player = new YT.Player("yt-host", {
         height: "180",
         width: "320",
+        host: YOUTUBE_PLAYER_HOST,
         playerVars,
         events: {
           onReady: onPlayerReady,

@@ -225,7 +225,7 @@ There is **no application server, database, login system, or secret API key** in
 
 ## ⚠️ YouTube & Content Notes
 
-KISHOREVERSE embeds YouTube content using the official YouTube IFrame Player API. Playback availability is controlled by YouTube and the rights/settings of individual videos. The application does not download, copy, or redistribute the audio.
+KISHOREVERSE embeds YouTube content using the official YouTube IFrame Player API in YouTube's privacy-enhanced `youtube-nocookie.com` mode. Playback availability and advertising are controlled by YouTube and the rights/settings of individual videos. The application does not download, copy, or redistribute the audio.
 
 The playlist link and embedded media remain hosted by YouTube. KISHOREVERSE does not bypass YouTube embedding restrictions; it only skips playlist items that YouTube reports as unavailable or non-embeddable.
 
