@@ -21,7 +21,7 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 - 🕐 **Live clock** in the top-left corner.
 - 🔗 **Open Playlist** buttons that take visitors directly to the selected YouTube playlist.
 - 🔀 **Load another YouTube playlist or song** by pasting its URL.
-- 🛡️ **Smart playlist recovery** that automatically skips unavailable/private/non-embeddable YouTube tracks (errors 100/101/150) and continues with the next playlist item.
+- 🛡️ **Bengali playlist preflight** that filters public, embeddable videos with the YouTube Data API before playback.
 - 🖼️ **Change Image** to use a custom local background.
 - ♻️ **Reset Image** to restore the KISHOREVERSE artwork.
 - 💾 **Local persistence** for the selected playlist and custom background.
@@ -59,7 +59,7 @@ PLZxwXvsjsA8s
 
 You can replace it from the UI by pasting another public YouTube / YouTube Music playlist or song URL.
 
-> **Note:** YouTube controls playback and embedding permissions. Some individual videos may not allow embedding because of rights, region, or uploader settings. KISHOREVERSE now detects YouTube playlist-item errors **100, 101 and 150** and automatically tries the next playlist item instead of stopping the entire playlist. If every available item is blocked, the app shows the YouTube error and keeps the direct **Open on YouTube** link available.
+> **Note:** YouTube controls playback, embedding permissions, and advertising. Some individual videos may not allow embedding because of rights, region, or uploader settings. KISHOREVERSE prefilters Bengali playlist items with the Data API, then still handles IFrame errors **100, 101, 150, and 153** as a final fallback. If every available item is blocked, the app shows the YouTube error and keeps the direct **Open on YouTube** link available.
 
 ---
 
@@ -84,7 +84,7 @@ You can replace it from the UI by pasting another public YouTube / YouTube Music
 - **JavaScript (ES6+)**
 - **Markdown** for project documentation
 
-No React, Node.js server, database, authentication system, or API key is required.
+No React, Node.js server, database, or authentication system is required. A restricted YouTube Data API v3 key is required for Bengali playlist preflight.
 
 ---
 
@@ -219,13 +219,13 @@ Browser
         └── Custom background image
 ```
 
-There is **no application server, database, login system, or secret API key** in this project.
+There is **no application server, database, login system, or server-side secret API key** in this project. Bengali preflight uses a browser-restricted YouTube Data API v3 key.
 
 ---
 
 ## ⚠️ YouTube & Content Notes
 
-KISHOREVERSE embeds YouTube content using the official YouTube IFrame Player API in YouTube's privacy-enhanced `youtube-nocookie.com` mode. Playback availability and advertising are controlled by YouTube and the rights/settings of individual videos. The application does not download, copy, or redistribute the audio.
+KISHOREVERSE embeds YouTube content using the official YouTube IFrame Player API in YouTube's privacy-enhanced `youtube-nocookie.com` mode. Privacy-enhanced mode does not disable ads: YouTube may show skippable or non-skippable ads according to its own policies and the video's monetization settings. There is no supported IFrame API setting to turn off YouTube ads for embedded videos, so KISHOREVERSE does not attempt to cover, manipulate, or automatically skip them. The application does not download, copy, or redistribute the audio.
 
 The playlist link and embedded media remain hosted by YouTube. KISHOREVERSE does not bypass YouTube embedding restrictions; it only skips playlist items that YouTube reports as unavailable or non-embeddable.
 
