@@ -547,38 +547,48 @@
       position: fixed;
       top: 50%;
       z-index: 52;
-      width: 34px;
-      height: 64px;
+      width: 26px;
+      height: 48px;
       align-items: center;
       justify-content: center;
       border: 1px solid rgba(95, 190, 255, .8);
       color: #54baff;
       background: rgba(5, 34, 72, .8);
-      box-shadow: 0 0 18px rgba(45, 160, 255, .7), inset 0 0 12px rgba(65, 170, 255, .18);
+      box-shadow: 0 0 12px rgba(45, 160, 255, .55), inset 0 0 8px rgba(65, 170, 255, .16);
       cursor: pointer;
       font: inherit;
-      font-size: 28px;
+      font-size: 22px;
       line-height: 1;
       transform: translateY(-50%);
-      animation: mobileArrowPulse 1.15s ease-in-out infinite;
+      animation: mobileArrowGlow 2.2s ease-in-out infinite;
     }
 
     .mobile-video-arrow.is-left {
       left: max(.25rem, env(safe-area-inset-left));
-      border-radius: 0 12px 12px 0;
+      border-radius: 0 9px 9px 0;
     }
 
     .mobile-video-arrow.is-right {
       right: max(.25rem, env(safe-area-inset-right));
-      border-radius: 12px 0 0 12px;
+      border-radius: 9px 0 0 9px;
+    }
+
+    .mobile-video-arrow::before {
+      display: block;
+      animation: mobileArrowDrift 1.4s ease-in-out infinite;
     }
 
     .mobile-video-arrow.is-left::before { content: "›"; }
     .mobile-video-arrow.is-right::before { content: "‹"; }
 
-    @keyframes mobileArrowPulse {
-      0%, 100% { opacity: .55; box-shadow: 0 0 10px rgba(45, 160, 255, .45), inset 0 0 10px rgba(65, 170, 255, .14); }
-      50% { opacity: 1; box-shadow: 0 0 25px rgba(45, 175, 255, .95), inset 0 0 16px rgba(65, 190, 255, .3); }
+    @keyframes mobileArrowGlow {
+      0%, 100% { opacity: .68; box-shadow: 0 0 8px rgba(45, 160, 255, .35), inset 0 0 7px rgba(65, 170, 255, .12); }
+      50% { opacity: 1; box-shadow: 0 0 17px rgba(45, 175, 255, .75), inset 0 0 11px rgba(65, 190, 255, .24); }
+    }
+
+    @keyframes mobileArrowDrift {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(3px); }
     }
 
     .screen-close,
