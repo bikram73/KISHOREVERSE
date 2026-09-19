@@ -396,17 +396,75 @@
     .play.is-playing .icon-play { display: none; }
     .play.is-playing .icon-pause { display: block; }
 
-    #yt-host,
-    #yt-host iframe {
+    /* Keep the YouTube player genuinely visible on deployed pages.
+       A hidden/transparent IFrame can behave differently on GitHub Pages,
+       especially when YouTube serves a pre-roll. */
+    #yt-host {
       position: fixed !important;
+      right: 1rem !important;
+      top: 5.6rem !important;
       width: 320px !important;
       height: 180px !important;
-      left: 0 !important;
-      bottom: 0 !important;
-      opacity: 0.001 !important;
-      pointer-events: none !important;
-      z-index: -1 !important;
+      z-index: 7 !important;
+      overflow: hidden !important;
+      border-radius: 14px !important;
+      border: 1px solid rgba(255,255,255,.18) !important;
+      background: rgba(0,0,0,.55) !important;
+      box-shadow: 0 18px 50px rgba(0,0,0,.38) !important;
+    }
+
+    #yt-host.is-movable {
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #yt-host.is-dragging {
+      cursor: grabbing;
+      user-select: none;
+    }
+
+    .yt-drag-handle {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 2;
+      height: 1.8rem;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 13px 13px 0 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent);
+      color: rgba(255, 255, 255, 0.8);
+      font: inherit;
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .yt-drag-handle:active,
+    #yt-host.is-dragging .yt-drag-handle {
+      cursor: grabbing;
+    }
+
+    #yt-host iframe {
+      display: block !important;
+      width: 320px !important;
+      height: 180px !important;
       border: 0 !important;
+    }
+
+    @media (max-width: 760px) {
+      #yt-host {
+        top: auto !important;
+        right: .75rem !important;
+        bottom: 10.5rem !important;
+        width: min(320px, calc(100vw - 1.5rem)) !important;
+        height: min(180px, calc((100vw - 1.5rem) * .5625)) !important;
+      }
+      #yt-host iframe {
+        width: 100% !important;
+        height: 100% !important;
+      }
     }
 
     @keyframes brandIn {
@@ -583,7 +641,7 @@
     const DEFAULT_PLAYLIST_URL = `https://www.youtube.com/playlist?list=${DEFAULT_PLAYLIST}`;
     const BENGALI_PLAYLIST = "PLZxwXvsjsA8s";
     const BENGALI_PLAYLIST_URL = `https://youtube.com/playlist?list=${BENGALI_PLAYLIST}`;
-    const YOUTUBE_PLAYER_HOST = "https://www.youtube-nocookie.com";
+    const YOUTUBE_PLAYER_HOST = "https://www.youtube.com";
     const DEFAULT_BG = "./assets/Kishore_Kumar.png";
     const STORAGE_KEY = "kishoreverse-source";
     const BG_DB = "kishoreverse-bg";
@@ -950,7 +1008,7 @@
       wantPlay = autoplay;
       setProgress(0, 0);
       setPlaying(false);
-      els.artist.textContent = "YouTube Music · Ads controlled by YouTube";
+      els.artist.textContent = "YouTube Music · Press Play to start";
 
       if (source.type === "playlist") {
         els.title.textContent = "Loading playlist…";
@@ -967,9 +1025,13 @@
         }
         if (!autoplay) {
           setTimeout(() => {
-            if (!wantPlay && playlistLength() > 0) {
-              player.playVideoAt(0);
-              player.pauseVideo();
+            if (playlistLength() > 0) {
+              try {
+                player.playVideoAt(0);
+                player.pauseVideo();
+                refreshMeta();
+                els.artist.textContent = "Ready · press ▶ Play";
+              } catch { /* YouTube still loading */ }
             }
           }, 900);
         }
@@ -1012,7 +1074,8 @@
         els.input.value = DEFAULT_PLAYLIST_URL;
       }
 
-      // Wait for a user gesture before autoplay — just cue/load silently
+      // Cue the remembered/default playlist without starting playback.
+      // Playback begins from the visible Play button, which is a direct user gesture.
       loadSource(currentSource, { autoplay: false });
       refreshMeta();
       tick();
@@ -1065,10 +1128,10 @@
         controls: 0,
         disablekb: 1,
         fs: 0,
-        modestbranding: 1,
         playsinline: 1,
         rel: 0,
         enablejsapi: 1,
+        iv_load_policy: 3,
       };
       if (window.location.protocol.startsWith("http")) {
         playerVars.origin = window.location.origin;
@@ -1085,6 +1148,69 @@
           onStateChange: onPlayerStateChange,
           onError: onPlayerError,
         },
+      });
+
+      setupYouTubeDrag();
+    }
+
+    function setupYouTubeDrag() {
+      const host = $("yt-host");
+      if (!host || host.querySelector(".yt-drag-handle")) return;
+
+      const handle = document.createElement("button");
+      handle.className = "yt-drag-handle";
+      handle.type = "button";
+      handle.textContent = "Move player";
+      handle.setAttribute("aria-label", "Move YouTube player");
+      host.appendChild(handle);
+      host.classList.add("is-movable");
+
+      let drag = null;
+
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), Math.max(min, max));
+      }
+
+      handle.addEventListener("pointerdown", (event) => {
+        const rect = host.getBoundingClientRect();
+        drag = {
+          offsetX: event.clientX - rect.left,
+          offsetY: event.clientY - rect.top,
+        };
+        host.style.left = `${rect.left}px`;
+        host.style.top = `${rect.top}px`;
+        host.style.right = "auto";
+        host.style.bottom = "auto";
+        host.classList.add("is-dragging");
+        handle.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+
+      handle.addEventListener("pointermove", (event) => {
+        if (!drag) return;
+        const rect = host.getBoundingClientRect();
+        const left = clamp(event.clientX - drag.offsetX, 0, window.innerWidth - rect.width);
+        const top = clamp(event.clientY - drag.offsetY, 0, window.innerHeight - rect.height);
+        host.style.left = `${left}px`;
+        host.style.top = `${top}px`;
+      });
+
+      function stopDragging(event) {
+        if (!drag) return;
+        drag = null;
+        host.classList.remove("is-dragging");
+        if (event.pointerId !== undefined && handle.hasPointerCapture(event.pointerId)) {
+          handle.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      handle.addEventListener("pointerup", stopDragging);
+      handle.addEventListener("pointercancel", stopDragging);
+      window.addEventListener("resize", () => {
+        if (!host.style.left || !host.style.top) return;
+        const rect = host.getBoundingClientRect();
+        host.style.left = `${clamp(rect.left, 0, window.innerWidth - rect.width)}px`;
+        host.style.top = `${clamp(rect.top, 0, window.innerHeight - rect.height)}px`;
       });
     }
 
@@ -1106,23 +1232,23 @@
       setDefaultBackground();
     });
 
-    function loadNamedPlaylist(id, url) {
+    function loadNamedPlaylist(id, url, autoplay = false) {
       const source = { type: "playlist", id };
       els.input.value = url;
       rememberSource(source, url);
-      if (!loadSource(source, { autoplay: true })) {
+      if (!loadSource(source, { autoplay })) {
         pendingSource = source;
         els.title.textContent = "Loading playlist…";
-        els.artist.textContent = "Starting the player";
+        els.artist.textContent = "Starting the YouTube player";
       }
     }
 
     els.loadHindi.addEventListener("click", () => {
-      loadNamedPlaylist(DEFAULT_PLAYLIST, DEFAULT_PLAYLIST_URL);
+      loadNamedPlaylist(DEFAULT_PLAYLIST, DEFAULT_PLAYLIST_URL, false);
     });
 
     els.loadBengali.addEventListener("click", () => {
-      loadNamedPlaylist(BENGALI_PLAYLIST, BENGALI_PLAYLIST_URL);
+      loadNamedPlaylist(BENGALI_PLAYLIST, BENGALI_PLAYLIST_URL, false);
     });
 
     els.form.addEventListener("submit", (e) => {
@@ -1134,7 +1260,7 @@
         return;
       }
       rememberSource(parsed, els.input.value.trim());
-      if (!loadSource(parsed, { autoplay: true })) {
+      if (!loadSource(parsed, { autoplay: false })) {
         els.title.textContent = "Player still loading…";
         els.artist.textContent = "Try again in a second";
       }
