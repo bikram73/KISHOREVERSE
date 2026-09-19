@@ -547,7 +547,7 @@
       display: none;
       position: fixed;
       right: max(1rem, env(safe-area-inset-right));
-      bottom: max(4.1rem, calc(env(safe-area-inset-bottom) + 3.4rem));
+      bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 3.25rem);
       z-index: 51;
       border: 1px solid rgba(255,255,255,.22);
       border-radius: 999px;
@@ -561,7 +561,10 @@
       font-size: .75rem;
       font-weight: 600;
       box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      transition: transform 180ms ease, background 180ms ease, opacity 260ms ease;
     }
+
+    .screen-open:hover { transform: translateY(-2px); background: rgba(8,12,10,.82); }
 
     body.is-minimal .top-bar .clock,
     body.is-minimal .top-bar .playlist-links,
@@ -572,7 +575,8 @@
     }
 
     body.is-minimal .screen-close { display: none; }
-    body.is-minimal .screen-open { display: block; }
+    body.is-minimal .screen-open,
+    .screen-open.is-video-closed { display: block; }
 
     body.is-minimal #yt-host {
       left: 50% !important;
@@ -925,17 +929,19 @@
       if (ytPlayerClosed) return;
       ytPlayerClosed = true;
       els.ytHost.classList.add("is-closing");
+      els.screenOpen.classList.add("is-video-closed");
+      els.screenOpen.textContent = "▶ Show video";
       setTimeout(() => {
         if (!ytPlayerClosed) return;
         els.ytHost.style.display = "none";
         els.ytHost.classList.remove("is-closing");
-        els.screenOpen.textContent = "▶ Open Player";
       }, 260);
     }
 
     function openYoutubeWindow() {
       els.ytHost.style.display = "block";
       ytPlayerClosed = false;
+      els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
       els.ytHost.classList.add("is-opening");
       requestAnimationFrame(() => {
