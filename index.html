@@ -623,8 +623,58 @@
       display: none;
       left: max(1rem, env(safe-area-inset-left)) !important;
       bottom: max(1rem, env(safe-area-inset-bottom));
-      padding: .55rem .8rem;
-      border-radius: 999px;
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      border-radius: 50%;
+      overflow: visible;
+      background: conic-gradient(#fff var(--thumb-progress, 0%), rgba(255,255,255,.22) 0);
+      border: 0;
+    }
+
+    .screen-all::before {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      z-index: 0;
+      border-radius: 50%;
+      background: rgba(8,12,10,.82);
+    }
+
+    .screen-all::after {
+      content: "▶";
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      z-index: 2;
+      width: 17px;
+      height: 17px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #07111c;
+      background: #fff;
+      font-size: 8px;
+    }
+
+    .screen-all img {
+      position: absolute;
+      inset: 3px;
+      z-index: 1;
+      display: block;
+      width: calc(100% - 6px);
+      height: calc(100% - 6px);
+      object-fit: cover;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .screen-all.is-playing img {
+      animation: screenThumbSpin 8s linear infinite;
+    }
+
+    @keyframes screenThumbSpin {
+      to { transform: rotate(360deg); }
     }
 
     .screen-close:hover,
@@ -795,6 +845,7 @@
       .brand { transform: translate(-50%, 0); }
       .player-dock { transform: translateX(-50%); }
       .art.is-spinning { animation: none; }
+      .screen-all.is-playing img { animation: none; }
     }
   </style>
 </head>
@@ -879,7 +930,9 @@
 
   <button class="screen-close" id="screenClose" type="button" aria-label="Close everything except the background and branding">×</button>
   <button class="screen-open" id="screenOpen" type="button" aria-label="Show video">▶ Show video</button>
-  <button class="screen-all" id="screenAll" type="button" aria-label="Show all interface controls">↗ Open all</button>
+  <button class="screen-all" id="screenAll" type="button" aria-label="Show all interface controls">
+    <img id="screenAllThumb" src="./assets/Kishore_Kumar.png" alt="" />
+  </button>
   <button class="mobile-video-arrow is-right" id="mobileVideoArrow" type="button" aria-label="Show hidden video"></button>
 
   <script>
@@ -922,6 +975,7 @@
       screenClose: $("screenClose"),
       screenOpen: $("screenOpen"),
       screenAll: $("screenAll"),
+      screenAllThumb: $("screenAllThumb"),
       mobileVideoArrow: $("mobileVideoArrow"),
     };
 
@@ -1170,6 +1224,7 @@
       els.play.classList.toggle("is-playing", isPlaying);
       els.play.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
       els.art.classList.toggle("is-spinning", isPlaying);
+      els.screenAll.classList.toggle("is-playing", isPlaying);
     }
 
     function setProgress(current, duration) {
@@ -1177,6 +1232,7 @@
       els.progressFill.style.width = `${pct}%`;
       els.progressKnob.style.left = `${pct}%`;
       els.progress.setAttribute("aria-valuenow", String(Math.round(pct)));
+      els.screenAll.style.setProperty("--thumb-progress", `${pct}%`);
     }
 
     function cleanArtistName(name) {
@@ -1197,7 +1253,9 @@
       document.title = `${title} · KISHOREVERSE`;
 
       if (videoId) {
-        els.art.src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+        const thumbnail = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+        els.art.src = thumbnail;
+        els.screenAllThumb.src = thumbnail;
         els.art.alt = `Cover for ${title}`;
       }
     }
