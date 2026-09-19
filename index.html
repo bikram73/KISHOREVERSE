@@ -521,7 +521,7 @@
       <div class="pill brand">KISHOREVERSE</div>
       <div class="playlist-links">
         <a class="pill playlist-link" href="https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV" target="_blank" rel="noopener noreferrer">🎵 Hindi ↗</a>
-        <a class="pill playlist-link" href="https://youtube.com/playlist?list=PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv&amp;si=kHRGlwXRzKxdCSwn" target="_blank" rel="noopener noreferrer">🎵 Bengali ↗</a>
+        <a class="pill playlist-link" href="https://youtube.com/playlist?list=PLZxwXvsjsA8s&amp;si=xcT_d1HDgrvz4E5t" target="_blank" rel="noopener noreferrer">🎵 Bengali ↗</a>
       </div>
     </header>
 
@@ -581,7 +581,7 @@
   <script>
     const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
     const DEFAULT_PLAYLIST_URL = `https://www.youtube.com/playlist?list=${DEFAULT_PLAYLIST}`;
-    const BENGALI_PLAYLIST = "PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv";
+    const BENGALI_PLAYLIST = "PLZxwXvsjsA8s";
     const BENGALI_PLAYLIST_URL = `https://youtube.com/playlist?list=${BENGALI_PLAYLIST}`;
     const DEFAULT_BG = "./assets/Kishore_Kumar.png";
     const STORAGE_KEY = "kishoreverse-source";
@@ -881,8 +881,6 @@
         const payload = {
           listType: "playlist",
           list: source.id,
-          index: 0,
-          startSeconds: 0,
         };
         try {
           if (autoplay) player.loadPlaylist(payload);
@@ -904,6 +902,11 @@
             if (wantPlay) tryPlay();
           }, 900);
         }
+        setTimeout(() => {
+          if (currentSource.id === source.id && els.title.textContent === "Loading playlist…") {
+            showDetailedPlayError(2);
+          }
+        }, 8000);
       } else {
         els.title.textContent = "Loading song…";
         if (autoplay) player.loadVideoById(source.id);
