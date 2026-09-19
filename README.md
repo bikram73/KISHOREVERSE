@@ -21,7 +21,7 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 - 🕐 **Live clock** in the top-left corner.
 - 🔗 **Open Playlist** buttons that take visitors directly to the selected YouTube playlist.
 - 🔀 **Load another YouTube playlist or song** by pasting its URL.
-- 🛡️ **Bengali playlist preflight** that filters public, embeddable videos with the YouTube Data API before playback.
+- 🛡️ **Playlist error recovery** that handles unavailable and non-embeddable YouTube items without crashing the player.
 - 🖼️ **Change Image** to use a custom local background.
 - ♻️ **Reset Image** to restore the KISHOREVERSE artwork.
 - 💾 **Local persistence** for the selected playlist and custom background.
@@ -30,6 +30,10 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 - 📱 **Responsive layout** for desktop and mobile browsers.
 - ♿ **Keyboard-friendly seeking** with Left / Right arrow keys.
 - 🌐 **GitHub Pages ready** with a static deployment workflow.
+- 🖱️ **Smooth draggable YouTube window** — move it toward the top, bottom, left, or right; it gently snaps to the nearest edge.
+- ✕ **YouTube window close/open control** with a compact restore option.
+- 🧹 **Minimal-screen mode** — the bottom-right close button hides the interface while preserving the background, KISHOREVERSE title, bottom YouTube player, and GitHub button.
+- 🐙 **Persistent GitHub repository button** linking to the KISHOREVERSE source repository.
 
 ---
 
@@ -59,7 +63,7 @@ PLZxwXvsjsA8s
 
 You can replace it from the UI by pasting another public YouTube / YouTube Music playlist or song URL.
 
-> **Note:** YouTube controls playback, embedding permissions, and advertising. Some individual videos may not allow embedding because of rights, region, or uploader settings. KISHOREVERSE prefilters Bengali playlist items with the Data API, then still handles IFrame errors **100, 101, 150, and 153** as a final fallback. If every available item is blocked, the app shows the YouTube error and keeps the direct **Open on YouTube** link available.
+> **Note:** YouTube controls playback, embedding permissions, and advertising. Some individual videos may not allow embedding because of rights, region, or uploader settings. KISHOREVERSE handles IFrame errors **100, 101, 150, and 153** and keeps the direct **Open on YouTube** link available. YouTube still controls which individual videos can be embedded.
 
 ---
 
@@ -84,7 +88,7 @@ You can replace it from the UI by pasting another public YouTube / YouTube Music
 - **JavaScript (ES6+)**
 - **Markdown** for project documentation
 
-No React, Node.js server, database, or authentication system is required. A restricted YouTube Data API v3 key is required for Bengali playlist preflight.
+No React, Node.js server, database, authentication system, or YouTube Data API key is required by this version.
 
 ---
 
@@ -193,6 +197,10 @@ The custom background is resized in the browser before being stored locally.
 | 🎚️ Progress bar | Seek through the current song |
 | ⬅️ / ➡️ | Seek backward / forward by 5 seconds when the progress bar is focused |
 | 🎵 Open Playlist | Open the configured YouTube playlist in a new tab |
+| 🖱️ Drag player | Move the YouTube window; release near an edge for a smooth snap |
+| ✕ Player close | Close the floating YouTube window; use **Open Player** to restore it |
+| ✕ Bottom-right close | Enter minimal mode and keep only the background, KISHOREVERSE title, bottom player and GitHub button |
+| 🐙 GitHub | Open the KISHOREVERSE GitHub repository |
 | 🖼️ Change image | Select a local background image |
 | ♻️ Reset image | Restore the default Kishore Kumar artwork |
 
@@ -219,7 +227,7 @@ Browser
         └── Custom background image
 ```
 
-There is **no application server, database, login system, or server-side secret API key** in this project. Bengali preflight uses a browser-restricted YouTube Data API v3 key.
+There is **no application server, database, login system, or server-side secret API key** in this project. YouTube playback is handled directly by the official IFrame Player API.
 
 ---
 

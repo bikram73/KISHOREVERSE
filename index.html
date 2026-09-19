@@ -396,74 +396,206 @@
     .play.is-playing .icon-play { display: none; }
     .play.is-playing .icon-pause { display: block; }
 
-    /* Keep the YouTube player genuinely visible on deployed pages.
-       A hidden/transparent IFrame can behave differently on GitHub Pages,
-       especially when YouTube serves a pre-roll. */
-    #yt-shell {
+    /* Floating, draggable YouTube player */
+    #yt-host {
       position: fixed !important;
-      right: 1rem !important;
-      top: 5.6rem !important;
+      left: auto;
+      top: 5.6rem;
+      right: 1rem;
+      bottom: auto;
       width: 320px !important;
       height: 180px !important;
-      z-index: 7 !important;
+      z-index: 20 !important;
       overflow: hidden !important;
-      border-radius: 14px !important;
-      border: 1px solid rgba(255,255,255,.18) !important;
-      background: rgba(0,0,0,.55) !important;
-      box-shadow: 0 18px 50px rgba(0,0,0,.38) !important;
-    }
-
-    #yt-shell.is-movable {
-      cursor: grab;
+      border-radius: 16px !important;
+      border: 1px solid rgba(255,255,255,.2) !important;
+      background: rgba(0,0,0,.62) !important;
+      box-shadow: 0 22px 70px rgba(0,0,0,.48), 0 0 0 1px rgba(255,255,255,.04) inset !important;
+      transition: left 520ms cubic-bezier(.22,1,.36,1), top 520ms cubic-bezier(.22,1,.36,1),
+                  right 520ms cubic-bezier(.22,1,.36,1), bottom 520ms cubic-bezier(.22,1,.36,1),
+                  width 420ms cubic-bezier(.22,1,.36,1), height 420ms cubic-bezier(.22,1,.36,1),
+                  border-radius 420ms ease, box-shadow 420ms ease, opacity 260ms ease;
       touch-action: none;
+      will-change: left, top, opacity, transform;
     }
 
-    #yt-shell.is-dragging {
-      cursor: grabbing;
-      user-select: none;
+    #yt-host.is-closing {
+      opacity: 0;
+      transform: scale(.96);
+      pointer-events: none;
+    }
+
+    #yt-host.is-opening {
+      opacity: 0;
+      transform: scale(.96);
+    }
+
+    #yt-host.is-dragging {
+      transition: none !important;
+      cursor: grabbing !important;
+      box-shadow: 0 28px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.1) inset !important;
+    }
+
+    #yt-host iframe {
+      display: block !important;
+      width: 100% !important;
+      height: 100% !important;
+      border: 0 !important;
     }
 
     .yt-drag-handle {
       position: absolute;
-      inset: 0 0 auto;
-      z-index: 2;
-      height: 1.8rem;
-      display: grid;
-      place-items: center;
-      border: 0;
-      border-radius: 13px 13px 0 0;
-      background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent);
-      color: rgba(255, 255, 255, 0.8);
-      font: inherit;
-      font-size: 0.7rem;
-      letter-spacing: 0.04em;
+      left: 0;
+      top: 0;
+      right: 44px;
+      height: 34px;
+      z-index: 4;
       cursor: grab;
+      background: linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,0));
+      border-radius: 16px 0 0 0;
       touch-action: none;
     }
 
-    .yt-drag-handle:active,
-    #yt-shell.is-dragging .yt-drag-handle {
-      cursor: grabbing;
+    .yt-drag-handle::before {
+      content: "⋮⋮  Drag player";
+      position: absolute;
+      left: 11px;
+      top: 7px;
+      color: rgba(255,255,255,.86);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-shadow: 0 1px 3px #000;
+      pointer-events: none;
     }
 
-    #yt-shell iframe {
-      display: block !important;
-      width: 320px !important;
-      height: 180px !important;
-      border: 0 !important;
+    .yt-window-close {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 6;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: rgba(8,12,10,.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      cursor: pointer;
+      font: inherit;
+      font-size: 17px;
+      line-height: 1;
+      transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+    }
+
+    .yt-window-close:hover { transform: scale(1.08); background: rgba(8,12,10,.9); }
+    .yt-window-close:active { transform: scale(.94); }
+
+    .github-link {
+      position: fixed;
+      right: max(1rem, env(safe-area-inset-right));
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      z-index: 50;
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .5rem .75rem;
+      border-radius: 999px;
+      color: #fff;
+      text-decoration: none;
+      font-size: .76rem;
+      font-weight: 600;
+      background: rgba(8,12,10,.62);
+      border: 1px solid rgba(255,255,255,.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 12px 34px rgba(0,0,0,.3);
+      transition: transform 180ms ease, background 180ms ease, opacity 260ms ease;
+    }
+
+    .github-link:hover { transform: translateY(-2px); background: rgba(8,12,10,.78); }
+    .github-link svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .screen-close {
+      position: fixed;
+      right: max(1rem, env(safe-area-inset-right));
+      bottom: max(4.1rem, calc(env(safe-area-inset-bottom) + 3.4rem));
+      z-index: 51;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: rgba(8,12,10,.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      cursor: pointer;
+      font: inherit;
+      font-size: 18px;
+      transition: transform 180ms ease, background 180ms ease;
+    }
+
+    .screen-close:hover { transform: translateY(-2px) scale(1.04); background: rgba(8,12,10,.82); }
+
+    .screen-open {
+      display: none;
+      position: fixed;
+      right: max(1rem, env(safe-area-inset-right));
+      bottom: max(4.1rem, calc(env(safe-area-inset-bottom) + 3.4rem));
+      z-index: 51;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      padding: .55rem .8rem;
+      color: #fff;
+      background: rgba(8,12,10,.68);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      cursor: pointer;
+      font: inherit;
+      font-size: .75rem;
+      font-weight: 600;
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    }
+
+    body.is-minimal .top-bar .clock,
+    body.is-minimal .top-bar .playlist-links,
+    body.is-minimal .player-dock {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translateY(10px);
+    }
+
+    body.is-minimal .screen-close { display: none; }
+    body.is-minimal .screen-open { display: block; }
+
+    body.is-minimal #yt-host {
+      left: 50% !important;
+      right: auto !important;
+      top: auto !important;
+      bottom: max(1rem, calc(env(safe-area-inset-bottom) + 1rem)) !important;
+      transform: translateX(-50%);
+      width: min(360px, calc(100vw - 1.5rem)) !important;
+      height: min(202px, calc((100vw - 1.5rem) * .5625)) !important;
     }
 
     @media (max-width: 760px) {
-      #yt-shell {
-        top: auto !important;
-        right: .75rem !important;
-        bottom: 10.5rem !important;
+      #yt-host {
         width: min(320px, calc(100vw - 1.5rem)) !important;
         height: min(180px, calc((100vw - 1.5rem) * .5625)) !important;
+        top: auto;
+        right: .75rem;
+        bottom: 10.5rem;
       }
-      #yt-shell iframe {
-        width: 100% !important;
-        height: 100% !important;
+
+      body.is-minimal #yt-host {
+        width: calc(100vw - 1rem) !important;
+        height: calc((100vw - 1rem) * .5625) !important;
       }
     }
 
@@ -634,9 +766,19 @@
     </div>
   </div>
 
-  <div id="yt-shell">
-    <div id="yt-host"></div>
+  <div id="yt-host" aria-label="Movable YouTube player">
+    <div id="yt-api-host"></div>
+    <div class="yt-drag-handle" id="ytDragHandle" title="Drag the player to any side"></div>
+    <button class="yt-window-close" id="ytWindowClose" type="button" aria-label="Close YouTube player">×</button>
   </div>
+
+  <a class="github-link" href="https://github.com/bikram73/KISHOREVERSE" target="_blank" rel="noopener noreferrer" aria-label="Open KISHOREVERSE GitHub repository">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.33-1.77-1.33-1.77-1.09-.75.08-.74.08-.74 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.48.99.11-.77.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.94 0-1.31.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.65 1.65.24 2.87.12 3.17.76.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.49 5.93.43.37.81 1.1.81 2.22v3.28c0 .32.22.69.83.57A12 12 0 0 0 12 .5Z"/></svg>
+    <span>GitHub</span>
+  </a>
+
+  <button class="screen-close" id="screenClose" type="button" aria-label="Minimize interface">×</button>
+  <button class="screen-open" id="screenOpen" type="button" aria-label="Restore interface">↗ Open</button>
 
   <script>
     const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
@@ -671,6 +813,12 @@
       loadHindi: $("loadHindi"),
       loadBengali: $("loadBengali"),
       resetBg: $("resetBg"),
+      ytHost: $("yt-host"),
+      ytApiHost: $("yt-api-host"),
+      ytDragHandle: $("ytDragHandle"),
+      ytWindowClose: $("ytWindowClose"),
+      screenClose: $("screenClose"),
+      screenOpen: $("screenOpen"),
     };
 
     let player = null;
@@ -686,6 +834,115 @@
     let playlistRecoveryTimer = null;
     let playlistLoadToken = 0;
     let wantPlay = false;
+    let ytDrag = null;
+    let ytPlayerClosed = false;
+    let ytMoveFrame = 0;
+    let ytPendingPosition = null;
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function setYtPosition(x, y, smooth = true) {
+      const rect = els.ytHost.getBoundingClientRect();
+      const margin = 10;
+      const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
+      const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
+      const nx = clamp(x, margin, maxX);
+      const ny = clamp(y, margin, maxY);
+      if (!smooth) els.ytHost.classList.add("is-dragging");
+      els.ytHost.style.left = `${nx}px`;
+      els.ytHost.style.top = `${ny}px`;
+      els.ytHost.style.right = "auto";
+      els.ytHost.style.bottom = "auto";
+    }
+
+    function snapYtToNearestEdge() {
+      const rect = els.ytHost.getBoundingClientRect();
+      const margin = 14;
+      const x = rect.left;
+      const y = rect.top;
+      const distances = {
+        left: x,
+        right: window.innerWidth - rect.right,
+        top: y,
+        bottom: window.innerHeight - rect.bottom,
+      };
+      const edge = Object.keys(distances).sort((a,b) => distances[a] - distances[b])[0];
+      let targetX = x;
+      let targetY = y;
+      if (edge === "left") targetX = margin;
+      if (edge === "right") targetX = window.innerWidth - rect.width - margin;
+      if (edge === "top") targetY = margin;
+      if (edge === "bottom") targetY = window.innerHeight - rect.height - margin;
+      setYtPosition(targetX, targetY, true);
+    }
+
+    function startYtDrag(e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      const rect = els.ytHost.getBoundingClientRect();
+      ytDrag = { pointerId: e.pointerId, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
+      els.ytHost.classList.add("is-dragging");
+      els.ytDragHandle.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
+    }
+
+    function moveYtDrag(e) {
+      if (!ytDrag || e.pointerId !== ytDrag.pointerId) return;
+      ytPendingPosition = { x: e.clientX - ytDrag.offsetX, y: e.clientY - ytDrag.offsetY };
+      if (!ytMoveFrame) {
+        ytMoveFrame = requestAnimationFrame(() => {
+          if (ytPendingPosition) setYtPosition(ytPendingPosition.x, ytPendingPosition.y, false);
+          ytPendingPosition = null;
+          ytMoveFrame = 0;
+        });
+      }
+      e.preventDefault();
+    }
+
+    function endYtDrag(e) {
+      if (!ytDrag || e.pointerId !== ytDrag.pointerId) return;
+      ytDrag = null;
+      if (ytMoveFrame) cancelAnimationFrame(ytMoveFrame);
+      if (ytPendingPosition) setYtPosition(ytPendingPosition.x, ytPendingPosition.y, false);
+      ytPendingPosition = null;
+      ytMoveFrame = 0;
+      els.ytHost.classList.remove("is-dragging");
+      snapYtToNearestEdge();
+    }
+
+    function minimizeInterface() {
+      document.body.classList.add("is-minimal");
+      // Keep the player and the persistent GitHub link visible; everything
+      // else is hidden while the Kishore Kumar background remains untouched.
+    }
+
+    function restoreInterface() {
+      document.body.classList.remove("is-minimal");
+    }
+
+    function closeYoutubeWindow() {
+      if (ytPlayerClosed) return;
+      ytPlayerClosed = true;
+      els.ytHost.classList.add("is-closing");
+      setTimeout(() => {
+        if (!ytPlayerClosed) return;
+        els.ytHost.style.display = "none";
+        els.ytHost.classList.remove("is-closing");
+        els.screenOpen.textContent = "▶ Open Player";
+      }, 260);
+    }
+
+    function openYoutubeWindow() {
+      els.ytHost.style.display = "block";
+      ytPlayerClosed = false;
+      els.screenOpen.textContent = "↗ Open";
+      els.ytHost.classList.add("is-opening");
+      requestAnimationFrame(() => {
+        snapYtToNearestEdge();
+        requestAnimationFrame(() => els.ytHost.classList.remove("is-opening"));
+      });
+    }
 
     function openBgDb() {
       return new Promise((resolve, reject) => {
@@ -1063,7 +1320,6 @@
 
     function onPlayerReady() {
       ready = true;
-      setupYouTubeDrag();
       setInterval(tick, 250);
 
       if (pendingSource?.id) {
@@ -1141,7 +1397,7 @@
         playerVars.widget_referrer = window.location.href;
       }
 
-      player = new YT.Player("yt-host", {
+      player = new YT.Player("yt-api-host", {
         height: "180",
         width: "320",
         host: YOUTUBE_PLAYER_HOST,
@@ -1151,68 +1407,6 @@
           onStateChange: onPlayerStateChange,
           onError: onPlayerError,
         },
-      });
-
-    }
-
-    function setupYouTubeDrag() {
-      const host = $("yt-shell");
-      if (!host || host.querySelector(".yt-drag-handle")) return;
-
-      const handle = document.createElement("button");
-      handle.className = "yt-drag-handle";
-      handle.type = "button";
-      handle.textContent = "Move player";
-      handle.setAttribute("aria-label", "Move YouTube player");
-      host.appendChild(handle);
-      host.classList.add("is-movable");
-
-      let drag = null;
-
-      function clamp(value, min, max) {
-        return Math.min(Math.max(value, min), Math.max(min, max));
-      }
-
-      handle.addEventListener("pointerdown", (event) => {
-        const rect = host.getBoundingClientRect();
-        drag = {
-          offsetX: event.clientX - rect.left,
-          offsetY: event.clientY - rect.top,
-        };
-        host.style.left = `${rect.left}px`;
-        host.style.top = `${rect.top}px`;
-        host.style.right = "auto";
-        host.style.bottom = "auto";
-        host.classList.add("is-dragging");
-        handle.setPointerCapture(event.pointerId);
-        event.preventDefault();
-      });
-
-      handle.addEventListener("pointermove", (event) => {
-        if (!drag) return;
-        const rect = host.getBoundingClientRect();
-        const left = clamp(event.clientX - drag.offsetX, 0, window.innerWidth - rect.width);
-        const top = clamp(event.clientY - drag.offsetY, 0, window.innerHeight - rect.height);
-        host.style.left = `${left}px`;
-        host.style.top = `${top}px`;
-      });
-
-      function stopDragging(event) {
-        if (!drag) return;
-        drag = null;
-        host.classList.remove("is-dragging");
-        if (event.pointerId !== undefined && handle.hasPointerCapture(event.pointerId)) {
-          handle.releasePointerCapture(event.pointerId);
-        }
-      }
-
-      handle.addEventListener("pointerup", stopDragging);
-      handle.addEventListener("pointercancel", stopDragging);
-      window.addEventListener("resize", () => {
-        if (!host.style.left || !host.style.top) return;
-        const rect = host.getBoundingClientRect();
-        host.style.left = `${clamp(rect.left, 0, window.innerWidth - rect.width)}px`;
-        host.style.top = `${clamp(rect.top, 0, window.innerHeight - rect.height)}px`;
       });
     }
 
@@ -1331,6 +1525,22 @@
       e.preventDefault();
       player.seekTo(next, true);
       setProgress(next, duration);
+    });
+
+    els.ytDragHandle.addEventListener("pointerdown", startYtDrag);
+    els.ytDragHandle.addEventListener("pointermove", moveYtDrag);
+    els.ytDragHandle.addEventListener("pointerup", endYtDrag);
+    els.ytDragHandle.addEventListener("pointercancel", endYtDrag);
+
+    els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
+    els.screenClose.addEventListener("click", minimizeInterface);
+    els.screenOpen.addEventListener("click", () => {
+      restoreInterface();
+      if (ytPlayerClosed) openYoutubeWindow();
+    });
+
+    window.addEventListener("resize", () => {
+      if (els.ytHost.style.display !== "none") snapYtToNearestEdge();
     });
 
     restoreCustomBackground();
