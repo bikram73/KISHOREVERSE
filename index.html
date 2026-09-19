@@ -147,7 +147,8 @@
       isolation: isolate;
       border-color: rgba(87, 183, 255, 0.65);
       box-shadow: 0 0 12px rgba(35, 149, 255, 0.42), inset 0 0 10px rgba(35, 149, 255, 0.12);
-      animation: brandIn 700ms 180ms ease forwards, brandGlow 2.8s 1s ease-in-out infinite;
+      text-shadow: 0 0 6px rgba(150, 225, 255, .35);
+      animation: brandIn 700ms 180ms ease forwards, brandGlow 2.8s 1s ease-in-out infinite, brandTextPulse 3.2s 1s ease-in-out infinite, brandRadiance 3.8s 1s ease-in-out infinite;
     }
 
     .brand::after {
@@ -827,6 +828,17 @@
       62%, 100% { transform: rotate(20deg) translateX(720%); opacity: 0; }
     }
 
+    @keyframes brandTextPulse {
+      0%, 100% { color: #fff; text-shadow: 0 0 6px rgba(150, 225, 255, .35); }
+      45% { color: #dff6ff; text-shadow: 0 0 10px rgba(105, 205, 255, .75), 0 0 22px rgba(35, 149, 255, .35); }
+      55% { color: #fff; text-shadow: 0 0 15px rgba(155, 230, 255, .9), 0 0 28px rgba(35, 149, 255, .45); }
+    }
+
+    @keyframes brandRadiance {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(50, 170, 255, .25)); }
+      50% { filter: drop-shadow(0 0 10px rgba(50, 185, 255, .72)); }
+    }
+
     @keyframes dockIn {
       from { opacity: 0; transform: translateX(-50%) translateY(12px); }
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -910,6 +922,8 @@
       .art.is-spinning { animation: none; }
       .screen-all.is-playing img { animation: none; }
       .screen-open.is-video-closed { animation: none; }
+      .brand { animation: none; opacity: 1; transform: translate(-50%, 0); }
+      .brand::after { animation: none; }
     }
   </style>
 </head>
