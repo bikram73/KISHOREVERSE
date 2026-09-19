@@ -526,11 +526,17 @@
       font-size: 17px;
       line-height: 1;
       transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+      animation: iframeClosePulse 1.5s ease-in-out infinite;
     }
 
     .yt-window-close:hover,
     .yt-window-close:focus-visible { transform: scale(1.08); background: #2498ff; box-shadow: 0 0 16px rgba(36, 152, 255, .5); }
     .yt-window-close:active { transform: scale(.94); }
+
+    @keyframes iframeClosePulse {
+      0%, 100% { border-color: rgba(255,255,255,.2); box-shadow: 0 0 5px rgba(36, 152, 255, .3); }
+      50% { border-color: rgba(130, 215, 255, .95); box-shadow: 0 0 18px rgba(36, 152, 255, .9); }
+    }
 
     .github-link {
       position: fixed;
