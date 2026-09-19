@@ -389,9 +389,24 @@
       margin: 0 0.1rem;
       background: #fff;
       color: var(--ink);
+      transition: background 180ms ease, color 180ms ease, filter 140ms ease;
     }
 
-    .play:hover { filter: brightness(0.96); }
+    .play:hover,
+    .play:focus-visible,
+    .play:active {
+      background: #2498ff;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(36, 152, 255, .45);
+      filter: none;
+    }
+
+    .play.is-playing {
+      background: #2498ff;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(36, 152, 255, .45);
+    }
+
     .play .icon-pause { display: none; }
     .play.is-playing .icon-play { display: none; }
     .play.is-playing .icon-pause { display: block; }
