@@ -605,6 +605,25 @@
     }
 
     @media (max-width: 760px) {
+      .github-link {
+        right: max(.75rem, env(safe-area-inset-right));
+        bottom: max(.75rem, env(safe-area-inset-bottom));
+        gap: .3rem;
+        padding: .45rem .6rem;
+        font-size: .68rem;
+      }
+
+      .github-link svg { width: 16px; height: 16px; }
+
+      .screen-open {
+        right: max(.75rem, env(safe-area-inset-right));
+        bottom: calc(max(.75rem, env(safe-area-inset-bottom)) + 3rem);
+        max-width: calc(100vw - 1.5rem);
+        padding: .48rem .65rem;
+        font-size: .68rem;
+        white-space: nowrap;
+      }
+
       #yt-host {
         width: min(320px, calc(100vw - 1.5rem)) !important;
         height: min(180px, calc((100vw - 1.5rem) * .5625)) !important;
