@@ -32,9 +32,9 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 
 ---
 
-## 🎵 Default Playlist
+## 🎵 Playlists
 
-The project is preconfigured with this playlist:
+The project is preconfigured to play the Hindi playlist:
 
 **Kishore Kumar — Hindi & Bengali Songs**
 
@@ -44,6 +44,16 @@ The playlist ID is:
 
 ```text
 PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV
+```
+
+The Bengali playlist is also available from the top-right **Bengali** link:
+
+👉 [Open the Kishore Kumar Bengali Playlist](https://youtube.com/playlist?list=PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv&si=kHRGlwXRzKxdCSwn)
+
+The Bengali playlist ID is:
+
+```text
+PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv
 ```
 
 You can replace it from the UI by pasting another public YouTube / YouTube Music playlist or song URL.
@@ -154,7 +164,8 @@ https://github.com/bikram73/KISHOREVERSE
 
 - 🐙 **GitHub Repository:** https://github.com/bikram73/KISHOREVERSE
 - 🌐 **GitHub Pages:** https://bikram73.github.io/KISHOREVERSE/
-- 🎵 **Kishore Kumar Playlist:** https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV
+- 🎵 **Kishore Kumar Hindi Playlist:** https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV
+- 🎵 **Kishore Kumar Bengali Playlist:** https://youtube.com/playlist?list=PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv
 
 ---
 

@@ -151,6 +151,11 @@
       transition: filter 140ms ease, transform 140ms ease, background 140ms ease;
     }
 
+    .playlist-links {
+      display: flex;
+      gap: 0.45rem;
+    }
+
     .playlist-link:hover {
       filter: brightness(1.08);
       transform: translateY(-1px);
@@ -404,7 +409,8 @@
     @media (max-width: 640px) {
       .scene-bg { object-position: center 38%; }
 
-      .playlist-link { font-size: 0.72rem; }
+      .playlist-links { gap: 0.3rem; }
+      .playlist-link { font-size: 0.68rem; padding: 0.3rem 0.45rem; }
 
       .top-bar {
         padding: 0.9rem;
@@ -484,7 +490,10 @@
     <header class="top-bar">
       <div class="pill clock" id="clock">--:--</div>
       <div class="pill brand">KISHOREVERSE</div>
-      <a class="pill playlist-link" href="https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV" target="_blank" rel="noopener noreferrer">🎵 Open Playlist ↗</a>
+      <div class="playlist-links">
+        <a class="pill playlist-link" href="https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV" target="_blank" rel="noopener noreferrer">🎵 Hindi ↗</a>
+        <a class="pill playlist-link" href="https://youtube.com/playlist?list=PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv&amp;si=kHRGlwXRzKxdCSwn" target="_blank" rel="noopener noreferrer">🎵 Bengali ↗</a>
+      </div>
     </header>
 
     <div class="player-dock">
