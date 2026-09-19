@@ -769,6 +769,27 @@
       return player?.getPlaylist?.()?.length ?? 0;
     }
 
+    function movePlaylist(step, attempt = 0) {
+      if (!player || !ready || currentSource.type !== "playlist") return;
+      const playlist = player.getPlaylist?.() || [];
+      if (!playlist.length) {
+        if (attempt < 10) {
+          setTimeout(() => movePlaylist(step, attempt + 1), 300);
+        } else {
+          els.title.textContent = "Playlist is still loading…";
+        }
+        return;
+      }
+
+      const index = player.getPlaylistIndex?.() ?? 0;
+      const nextIndex = (index + step + playlist.length) % playlist.length;
+      wantPlay = true;
+      player.playVideoAt(nextIndex);
+      setTimeout(() => {
+        if (wantPlay) tryPlay();
+      }, 300);
+    }
+
     function parseYouTubeInput(raw) {
       const value = String(raw || "").trim();
       if (!value) return null;
@@ -798,6 +819,23 @@
     function rememberSource(source, displayValue) {
       currentSource = source;
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ source, displayValue }));
+    }
+
+    function showDetailedPlayError(code) {
+      const reasons = {
+        2: "The YouTube request is invalid",
+        5: "The video cannot be played in this HTML5 player",
+        100: "The video was removed or is private",
+        101: "The video owner does not allow embedding",
+        150: "The video owner does not allow embedding",
+        153: "YouTube could not verify the video request",
+      };
+      const reason = reasons[code] || "YouTube did not provide a playback reason";
+      const sourceLabel = currentSource.type === "playlist" ? "playlist" : "video";
+      els.title.textContent = `Unable to load ${sourceLabel}`;
+      els.artist.textContent = `${reason} (error ${code ?? "unknown"})`;
+      setPlaying(false);
+      wantPlay = false;
     }
 
     function showPlayError(code) {
@@ -943,7 +981,7 @@
         }
       }
 
-      showPlayError(code);
+      showDetailedPlayError(code);
     }
 
     function createPlayer() {
@@ -1042,10 +1080,7 @@
         player.seekTo(0, true);
         return;
       }
-      const len = playlistLength();
-      const idx = player.getPlaylistIndex?.() ?? 0;
-      if (len > 0 && idx <= 0) player.playVideoAt(len - 1);
-      else player.previousVideo();
+      movePlaylist(-1);
     });
 
     els.next.addEventListener("click", () => {
@@ -1055,10 +1090,7 @@
         player.playVideo();
         return;
       }
-      const len = playlistLength();
-      const idx = player.getPlaylistIndex?.() ?? 0;
-      if (len > 0 && idx >= len - 1) player.playVideoAt(0);
-      else player.nextVideo();
+      movePlaylist(1);
     });
 
     els.progress.addEventListener("pointerdown", (e) => {
