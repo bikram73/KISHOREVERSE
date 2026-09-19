@@ -399,7 +399,7 @@
     /* Keep the YouTube player genuinely visible on deployed pages.
        A hidden/transparent IFrame can behave differently on GitHub Pages,
        especially when YouTube serves a pre-roll. */
-    #yt-host {
+    #yt-shell {
       position: fixed !important;
       right: 1rem !important;
       top: 5.6rem !important;
@@ -413,12 +413,12 @@
       box-shadow: 0 18px 50px rgba(0,0,0,.38) !important;
     }
 
-    #yt-host.is-movable {
+    #yt-shell.is-movable {
       cursor: grab;
       touch-action: none;
     }
 
-    #yt-host.is-dragging {
+    #yt-shell.is-dragging {
       cursor: grabbing;
       user-select: none;
     }
@@ -442,11 +442,11 @@
     }
 
     .yt-drag-handle:active,
-    #yt-host.is-dragging .yt-drag-handle {
+    #yt-shell.is-dragging .yt-drag-handle {
       cursor: grabbing;
     }
 
-    #yt-host iframe {
+    #yt-shell iframe {
       display: block !important;
       width: 320px !important;
       height: 180px !important;
@@ -454,14 +454,14 @@
     }
 
     @media (max-width: 760px) {
-      #yt-host {
+      #yt-shell {
         top: auto !important;
         right: .75rem !important;
         bottom: 10.5rem !important;
         width: min(320px, calc(100vw - 1.5rem)) !important;
         height: min(180px, calc((100vw - 1.5rem) * .5625)) !important;
       }
-      #yt-host iframe {
+      #yt-shell iframe {
         width: 100% !important;
         height: 100% !important;
       }
@@ -634,7 +634,9 @@
     </div>
   </div>
 
-  <div id="yt-host"></div>
+  <div id="yt-shell">
+    <div id="yt-host"></div>
+  </div>
 
   <script>
     const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
@@ -1061,6 +1063,7 @@
 
     function onPlayerReady() {
       ready = true;
+      setupYouTubeDrag();
       setInterval(tick, 250);
 
       if (pendingSource?.id) {
@@ -1150,11 +1153,10 @@
         },
       });
 
-      setupYouTubeDrag();
     }
 
     function setupYouTubeDrag() {
-      const host = $("yt-host");
+      const host = $("yt-shell");
       if (!host || host.querySelector(".yt-drag-handle")) return;
 
       const handle = document.createElement("button");
