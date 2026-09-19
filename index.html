@@ -230,10 +230,16 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-      transition: filter 140ms ease, transform 140ms ease;
+      transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
     }
 
-    .bar-btn:hover { filter: brightness(0.96); }
+    .bar-btn:hover,
+    .bar-btn:focus-visible {
+      background: #2498ff;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(36, 152, 255, .4);
+    }
+
     .bar-btn:active { transform: scale(0.97); }
 
     .image-bar {
@@ -374,7 +380,12 @@
       transition: background 140ms ease, transform 140ms ease;
     }
 
-    .ctrl:hover { background: rgba(255, 255, 255, 0.1); }
+    .ctrl:hover,
+    .ctrl:focus-visible {
+      background: #2498ff;
+      color: #fff;
+      box-shadow: 0 0 14px rgba(36, 152, 255, .4);
+    }
     .ctrl:active { transform: scale(0.94); }
 
     .ctrl svg {
@@ -506,7 +517,8 @@
       transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
     }
 
-    .yt-window-close:hover { transform: scale(1.08); background: rgba(8,12,10,.9); }
+    .yt-window-close:hover,
+    .yt-window-close:focus-visible { transform: scale(1.08); background: #2498ff; box-shadow: 0 0 16px rgba(36, 152, 255, .5); }
     .yt-window-close:active { transform: scale(.94); }
 
     .github-link {
@@ -531,7 +543,8 @@
       transition: transform 180ms ease, background 180ms ease, opacity 260ms ease;
     }
 
-    .github-link:hover { transform: translateY(-2px); background: rgba(8,12,10,.78); }
+    .github-link:hover,
+    .github-link:focus-visible { transform: translateY(-2px); background: #2498ff; box-shadow: 0 0 16px rgba(36, 152, 255, .5); }
     .github-link svg { width: 18px; height: 18px; fill: currentColor; }
 
     .screen-open {
@@ -555,7 +568,8 @@
       transition: transform 180ms ease, background 180ms ease, opacity 260ms ease;
     }
 
-    .screen-open:hover { transform: translateY(-2px); background: rgba(8,12,10,.82); }
+    .screen-open:hover,
+    .screen-open:focus-visible { transform: translateY(-2px); background: #2498ff; box-shadow: 0 0 16px rgba(36, 152, 255, .5); }
 
     .mobile-video-arrow {
       display: none;
@@ -693,7 +707,12 @@
     }
 
     .screen-close:hover,
-    .screen-all:hover { transform: translateY(-2px); background: rgba(8,12,10,.82); }
+    .screen-close:focus-visible,
+    .screen-all:hover,
+    .screen-all:focus-visible { transform: translateY(-2px); background: #2498ff; box-shadow: 0 0 18px rgba(36, 152, 255, .55); }
+
+    .screen-close:hover,
+    .screen-close:focus-visible { background: #2498ff; box-shadow: 0 0 18px rgba(36, 152, 255, .55); }
 
     body.is-minimal .top-bar .clock,
     body.is-minimal .top-bar .playlist-links,
