@@ -804,14 +804,14 @@
       }
 
       const host = url.hostname.replace(/^www\./, "");
-      const list = url.searchParams.get("list");
+      const list = url.searchParams.get("list")?.trim();
       const video =
         url.searchParams.get("v") ||
         (host === "youtu.be" ? url.pathname.slice(1).split("/")[0] : null) ||
         (url.pathname.startsWith("/shorts/") ? url.pathname.split("/")[2] : null) ||
         (url.pathname.startsWith("/embed/") ? url.pathname.split("/")[2] : null);
 
-      if (list && /^(PL|OL|UU|LL|RD|SD)[\w-]*/i.test(list)) return { type: "playlist", id: list };
+      if (list && /^[\w-]{10,}$/.test(list)) return { type: "playlist", id: list };
       if (video && /^[\w-]{11}$/.test(video)) return { type: "video", id: video };
       return null;
     }
@@ -884,9 +884,14 @@
           index: 0,
           startSeconds: 0,
         };
-        if (autoplay) player.loadPlaylist(payload);
-        else {
-          player.cuePlaylist(payload);
+        try {
+          if (autoplay) player.loadPlaylist(payload);
+          else player.cuePlaylist(payload);
+        } catch {
+          if (autoplay) player.loadPlaylist(source.id);
+          else player.cuePlaylist(source.id);
+        }
+        if (!autoplay) {
           setTimeout(() => {
             if (!wantPlay && playlistLength() > 0) {
               player.playVideoAt(0);
