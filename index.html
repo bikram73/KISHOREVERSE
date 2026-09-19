@@ -689,6 +689,14 @@
         width: calc(100vw - 1rem) !important;
         height: calc((100vw - 1rem) * .5625) !important;
       }
+
+      body.is-minimal #yt-host.is-mobile-open {
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+      }
     }
 
     @keyframes brandIn {
@@ -1053,6 +1061,7 @@
       els.ytHost.style.display = "block";
       ytPlayerClosed = false;
       els.ytHost.classList.remove("is-closing");
+      els.ytHost.classList.toggle("is-mobile-open", Boolean(position));
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
       els.mobileVideoArrow.classList.remove("is-video-closed");
@@ -1654,7 +1663,7 @@
 
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
     els.screenClose.addEventListener("click", minimizeInterface);
-    els.mobileVideoArrow.addEventListener("click", () => openYoutubeWindow());
+    els.mobileVideoArrow.addEventListener("click", () => openYoutubeWindow(ytPositionBeforeMinimal));
     els.screenOpen.addEventListener("click", () => {
       if (ytPlayerClosed) openYoutubeWindow();
     });
