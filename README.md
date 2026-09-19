@@ -12,15 +12,16 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 
 - 🎙️ **Kishore Kumar themed interface** with a cinematic vintage aesthetic.
 - 🖼️ **Browser-optimized 16:9 background artwork** for desktop screens.
-- 🎵 **Preloaded Kishore Kumar playlist** from YouTube.
+- 🎵 **Two built-in Kishore Kumar playlists** — Hindi and Bengali.
 - ▶️ **Play / Pause** controls.
 - ⏮️ **Previous** and ⏭️ **Next** track controls.
 - 🎚️ **Interactive progress bar** with mouse/touch seeking.
 - 💿 **Dynamic YouTube thumbnail** shown as the circular album artwork.
 - 🔄 **Animated spinning artwork** while music is playing.
 - 🕐 **Live clock** in the top-left corner.
-- 🔗 **Open Playlist** button that takes visitors directly to the configured YouTube playlist.
+- 🔗 **Open Playlist** buttons that take visitors directly to the selected YouTube playlist.
 - 🔀 **Load another YouTube playlist or song** by pasting its URL.
+- 🛡️ **Smart playlist recovery** that automatically skips unavailable/private/non-embeddable YouTube tracks (errors 100/101/150) and continues with the next playlist item.
 - 🖼️ **Change Image** to use a custom local background.
 - ♻️ **Reset Image** to restore the KISHOREVERSE artwork.
 - 💾 **Local persistence** for the selected playlist and custom background.
@@ -58,7 +59,7 @@ PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv
 
 You can replace it from the UI by pasting another public YouTube / YouTube Music playlist or song URL.
 
-> **Note:** YouTube controls playback and embedding permissions. Some individual videos may not allow embedding because of rights, region, or uploader settings. The player handles playlist errors by attempting to move to another track.
+> **Note:** YouTube controls playback and embedding permissions. Some individual videos may not allow embedding because of rights, region, or uploader settings. KISHOREVERSE now detects YouTube playlist-item errors **100, 101 and 150** and automatically tries the next playlist item instead of stopping the entire playlist. If every available item is blocked, the app shows the YouTube error and keeps the direct **Open on YouTube** link available.
 
 ---
 
@@ -226,7 +227,7 @@ There is **no application server, database, login system, or secret API key** in
 
 KISHOREVERSE embeds YouTube content using the official YouTube IFrame Player API. Playback availability is controlled by YouTube and the rights/settings of individual videos. The application does not download, copy, or redistribute the audio.
 
-The playlist link and embedded media remain hosted by YouTube.
+The playlist link and embedded media remain hosted by YouTube. KISHOREVERSE does not bypass YouTube embedding restrictions; it only skips playlist items that YouTube reports as unavailable or non-embeddable.
 
 ---
 

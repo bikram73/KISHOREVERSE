@@ -618,7 +618,12 @@
     let currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
     let pendingSource = null;
     let customBgUrl = null;
-    let errorSkips = 0;
+    // Playlist recovery state. YouTube can return 100/101/150 for individual
+    // playlist items. We remember the failed index and move to the next item
+    // instead of stopping the entire playlist.
+    let playlistFailedIndexes = new Set();
+    let playlistRecoveryTimer = null;
+    let playlistLoadToken = 0;
     let wantPlay = false;
 
     function openBgDb() {
@@ -825,9 +830,9 @@
       const reasons = {
         2: "The YouTube request is invalid",
         5: "The video cannot be played in this HTML5 player",
-        100: "The video was removed or is private",
-        101: "The video owner does not allow embedding",
-        150: "The video owner does not allow embedding",
+        100: "This playlist item is unavailable or private",
+        101: "This playlist item does not allow embedding",
+        150: "This playlist item does not allow embedding",
         153: "YouTube could not verify the video request",
       };
       const reason = reasons[code] || "YouTube did not provide a playback reason";
@@ -839,15 +844,84 @@
     }
 
     function showPlayError(code) {
-      const blocked = code === 101 || code === 150 || code === 153;
+      const blocked = code === 101 || code === 150;
+      const unavailable = code === 100;
       els.title.textContent = blocked
-        ? "Can’t embed these tracks"
-        : "Couldn’t play that link";
-      els.artist.textContent = blocked
-        ? "YT Music “Topic” songs often block embeds — try a regular YouTube playlist"
-        : "Paste a public YouTube playlist or video URL";
+        ? "Skipped a non-embeddable song"
+        : unavailable
+          ? "Skipped an unavailable song"
+          : "Couldn’t play that link";
+      els.artist.textContent = blocked || unavailable
+        ? "KISHOREVERSE is trying the next song in this playlist…"
+        : "Paste a public YouTube playlist or song URL";
       setPlaying(false);
-      wantPlay = false;
+    }
+
+    function resetPlaylistRecovery() {
+      playlistFailedIndexes.clear();
+      if (playlistRecoveryTimer) {
+        clearTimeout(playlistRecoveryTimer);
+        playlistRecoveryTimer = null;
+      }
+    }
+
+    function playlistCandidateIndexes(length, currentIndex) {
+      const candidates = [];
+      for (let offset = 1; offset <= length; offset += 1) {
+        const candidate = (currentIndex + offset) % length;
+        if (!playlistFailedIndexes.has(candidate)) candidates.push(candidate);
+      }
+      return candidates;
+    }
+
+    function recoverFromPlaylistError(code, failedIndex, token) {
+      if (currentSource.type !== "playlist" || token !== playlistLoadToken) return false;
+
+      const playlist = player?.getPlaylist?.() || [];
+      const length = playlist.length;
+      const index = Number.isInteger(failedIndex) && failedIndex >= 0 ? failedIndex : 0;
+      playlistFailedIndexes.add(index);
+
+      showPlayError(code);
+
+      // Prefer playVideoAt() because it works with the playlist indices
+      // returned by the IFrame API. Fall back to nextVideo() if YouTube has
+      // not exposed the playlist array yet.
+      if (length > 0) {
+        const candidates = playlistCandidateIndexes(length, index);
+        if (!candidates.length) {
+          showDetailedPlayError(code);
+          return false;
+        }
+
+        const nextIndex = candidates[0];
+        playlistRecoveryTimer = setTimeout(() => {
+          playlistRecoveryTimer = null;
+          try {
+            player.playVideoAt(nextIndex);
+            if (wantPlay) {
+              setTimeout(() => tryPlay(), 180);
+            }
+          } catch {
+            try { player.nextVideo(); } catch { /* ignore */ }
+          }
+        }, 300);
+        return true;
+      }
+
+      if (playlistFailedIndexes.size < 25) {
+        playlistRecoveryTimer = setTimeout(() => {
+          playlistRecoveryTimer = null;
+          try {
+            player.nextVideo();
+            if (wantPlay) setTimeout(() => tryPlay(), 180);
+          } catch { /* ignore */ }
+        }, 300);
+        return true;
+      }
+
+      showDetailedPlayError(code);
+      return false;
     }
 
     function tryPlay() {
@@ -870,7 +944,8 @@
     function loadSource(source, { autoplay = true } = {}) {
       if (!player || !ready) return false;
 
-      errorSkips = 0;
+      playlistLoadToken += 1;
+      resetPlaylistRecovery();
       wantPlay = autoplay;
       setProgress(0, 0);
       setPlaying(false);
@@ -898,15 +973,20 @@
           }, 900);
         }
         if (autoplay) {
+          // Start immediately from the user's Load/playlist-button gesture.
+          // The delayed call is a fallback while YouTube finishes loading
+          // the playlist metadata.
+          tryPlay();
           setTimeout(() => {
             if (wantPlay) tryPlay();
           }, 900);
         }
+        const loadToken = playlistLoadToken;
         setTimeout(() => {
-          if (currentSource.id === source.id && els.title.textContent === "Loading playlist…") {
+          if (loadToken === playlistLoadToken && currentSource.id === source.id && els.title.textContent === "Loading playlist…") {
             showDetailedPlayError(2);
           }
-        }, 8000);
+        }, 10000);
       } else {
         els.title.textContent = "Loading song…";
         if (autoplay) player.loadVideoById(source.id);
@@ -940,11 +1020,9 @@
     function onPlayerStateChange(event) {
       const { PLAYING, PAUSED, ENDED, CUED, BUFFERING } = YT.PlayerState;
 
-      if (event.data === PLAYING || event.data === BUFFERING) {
-        errorSkips = 0;
-      }
-
       if (event.data === PLAYING) {
+        // A successful track means playlist recovery can start fresh.
+        playlistFailedIndexes.clear();
         setPlaying(true);
         refreshMeta();
       } else if (event.data === PAUSED) {
@@ -966,26 +1044,15 @@
 
     function onPlayerError(event) {
       const code = event?.data;
-      const len = playlistLength();
-      const idx = player.getPlaylistIndex?.() ?? 0;
+      const index = player.getPlaylistIndex?.() ?? 0;
 
-      if (currentSource.type === "playlist") {
-        errorSkips += 1;
-        const limit = len > 0 ? len : 8;
-        if (errorSkips < limit) {
-          setTimeout(() => {
-            try {
-              const available = player.getPlaylist?.() || [];
-              const availableLength = available.length;
-              const currentIndex = player.getPlaylistIndex?.() ?? idx;
-              if (availableLength > 0) player.playVideoAt((currentIndex + 1) % availableLength);
-              else player.nextVideo();
-            } catch {
-              /* ignore */
-            }
-          }, 250);
-          return;
-        }
+      // 100 = unavailable/private, 101/150 = embedding disabled. These
+      // errors can affect only one item in a playlist, so do not kill the
+      // whole Bengali/Hindi playlist. Move forward until a playable item
+      // is found.
+      if (currentSource.type === "playlist" && [100, 101, 150].includes(code)) {
+        recoverFromPlaylistError(code, index, playlistLoadToken);
+        return;
       }
 
       showDetailedPlayError(code);
