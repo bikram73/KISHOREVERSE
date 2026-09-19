@@ -542,6 +542,44 @@
 
     .screen-open:hover { transform: translateY(-2px); background: rgba(8,12,10,.82); }
 
+    .screen-close,
+    .screen-all {
+      position: fixed;
+      left: max(1rem, env(safe-area-inset-left));
+      z-index: 51;
+      border: 1px solid rgba(255,255,255,.22);
+      color: #fff;
+      background: rgba(8,12,10,.68);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      cursor: pointer;
+      font: inherit;
+      font-size: .75rem;
+      font-weight: 600;
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      transition: transform 180ms ease, background 180ms ease;
+    }
+
+    .screen-close {
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 18px;
+    }
+
+    .screen-all {
+      display: none;
+      bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 6.5rem);
+      padding: .55rem .8rem;
+      border-radius: 999px;
+    }
+
+    .screen-close:hover,
+    .screen-all:hover { transform: translateY(-2px); background: rgba(8,12,10,.82); }
+
     body.is-minimal .top-bar .clock,
     body.is-minimal .top-bar .playlist-links,
     body.is-minimal .player-dock {
@@ -550,8 +588,10 @@
       transform: translateY(10px);
     }
 
-    body.is-minimal .screen-open,
     .screen-open.is-video-closed { display: block; }
+
+    body.is-minimal .screen-close { display: none; }
+    body.is-minimal .screen-all { display: block; }
 
     body.is-minimal #yt-host {
       left: 50% !important;
@@ -756,7 +796,9 @@
     <span>GitHub</span>
   </a>
 
-  <button class="screen-open" id="screenOpen" type="button" aria-label="Restore interface">↗ Open</button>
+  <button class="screen-close" id="screenClose" type="button" aria-label="Close everything except the background and branding">×</button>
+  <button class="screen-open" id="screenOpen" type="button" aria-label="Show video">▶ Show video</button>
+  <button class="screen-all" id="screenAll" type="button" aria-label="Show all interface controls">↗ Open all</button>
 
   <script>
     const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
@@ -795,7 +837,9 @@
       ytApiHost: $("yt-api-host"),
       ytDragHandle: $("ytDragHandle"),
       ytWindowClose: $("ytWindowClose"),
+      screenClose: $("screenClose"),
       screenOpen: $("screenOpen"),
+      screenAll: $("screenAll"),
     };
 
     let player = null;
@@ -890,8 +934,7 @@
 
     function minimizeInterface() {
       document.body.classList.add("is-minimal");
-      // Keep the player and the persistent GitHub link visible; everything
-      // else is hidden while the Kishore Kumar background remains untouched.
+      closeYoutubeWindow();
     }
 
     function restoreInterface() {
@@ -1512,7 +1555,11 @@
     els.ytDragHandle.addEventListener("pointercancel", endYtDrag);
 
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
+    els.screenClose.addEventListener("click", minimizeInterface);
     els.screenOpen.addEventListener("click", () => {
+      if (ytPlayerClosed) openYoutubeWindow();
+    });
+    els.screenAll.addEventListener("click", () => {
       restoreInterface();
       if (ytPlayerClosed) openYoutubeWindow();
     });
