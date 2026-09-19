@@ -587,6 +587,7 @@
     let ready = false;
     let seeking = false;
     let currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
+    let pendingSource = null;
     let customBgUrl = null;
     let errorSkips = 0;
     let wantPlay = false;
@@ -810,13 +811,8 @@
 
       if (source.type === "playlist") {
         els.title.textContent = "Loading playlist…";
-        const payload = {
-          listType: "playlist",
-          list: source.id,
-          index: 0,
-        };
-        if (autoplay) player.loadPlaylist(payload);
-        else player.cuePlaylist(payload);
+        if (autoplay) player.loadPlaylist(source.id);
+        else player.cuePlaylist(source.id);
       } else {
         els.title.textContent = "Loading song…";
         if (autoplay) player.loadVideoById(source.id);
@@ -837,7 +833,13 @@
         saved = null;
       }
 
-      if (saved?.source?.id) {
+      if (pendingSource?.id) {
+        currentSource = pendingSource;
+        pendingSource = null;
+        els.input.value = currentSource.id === BENGALI_PLAYLIST
+          ? BENGALI_PLAYLIST_URL
+          : DEFAULT_PLAYLIST_URL;
+      } else if (saved?.source?.id) {
         currentSource = saved.source;
         els.input.value = saved.displayValue || saved.source.id;
       } else {
@@ -953,8 +955,9 @@
       els.input.value = url;
       rememberSource(source, url);
       if (!loadSource(source, { autoplay: true })) {
-        els.title.textContent = "Player still loading…";
-        els.artist.textContent = "Try again in a second";
+        pendingSource = source;
+        els.title.textContent = "Loading playlist…";
+        els.artist.textContent = "Starting the player";
       }
     }
 
