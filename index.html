@@ -860,6 +860,8 @@
     let ytPlayerClosed = false;
     let ytMoveFrame = 0;
     let ytPendingPosition = null;
+    let ytWasOpenBeforeMinimal = null;
+    let ytPositionBeforeMinimal = null;
 
     function clamp(value, min, max) {
       return Math.min(max, Math.max(min, value));
@@ -934,8 +936,16 @@
     }
 
     function minimizeInterface() {
+      if (document.body.classList.contains("is-minimal")) return;
+      ytWasOpenBeforeMinimal = !ytPlayerClosed && els.ytHost.style.display !== "none";
+      if (ytWasOpenBeforeMinimal) {
+        const rect = els.ytHost.getBoundingClientRect();
+        ytPositionBeforeMinimal = { x: rect.left, y: rect.top };
+      } else {
+        ytPositionBeforeMinimal = null;
+      }
       document.body.classList.add("is-minimal");
-      closeYoutubeWindow();
+      if (ytWasOpenBeforeMinimal) closeYoutubeWindow();
     }
 
     function restoreInterface() {
@@ -955,14 +965,16 @@
       }, 260);
     }
 
-    function openYoutubeWindow() {
+    function openYoutubeWindow(position = null) {
       els.ytHost.style.display = "block";
       ytPlayerClosed = false;
+      els.ytHost.classList.remove("is-closing");
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
       els.ytHost.classList.add("is-opening");
       requestAnimationFrame(() => {
-        snapYtToNearestEdge();
+        if (position) setYtPosition(position.x, position.y, true);
+        else snapYtToNearestEdge();
         requestAnimationFrame(() => els.ytHost.classList.remove("is-opening"));
       });
     }
@@ -1562,7 +1574,11 @@
     });
     els.screenAll.addEventListener("click", () => {
       restoreInterface();
-      if (ytPlayerClosed) openYoutubeWindow();
+      if (ytWasOpenBeforeMinimal) {
+        openYoutubeWindow(ytPositionBeforeMinimal);
+      }
+      ytWasOpenBeforeMinimal = null;
+      ytPositionBeforeMinimal = null;
     });
 
     window.addEventListener("resize", () => {
