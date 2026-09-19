@@ -52,7 +52,7 @@
       inset: 0;
       overflow: hidden;
       background: #0b100e;
-      --scene-image: url("./assets/Kishore_Kumar_new.png");
+      --scene-image: url("./assets/Kishore_Kumar.png");
       pointer-events: none;
     }
 
@@ -71,11 +71,10 @@
     .scene-bg {
       position: absolute;
       inset: 0;
-      width: 100%;
-      height: 100%;
-      aspect-ratio: 16 / 9;
+      width: 100vw;
+      height: 100vh;
       z-index: 0;
-      object-fit: contain;
+      object-fit: cover;
       object-position: center center;
       image-rendering: auto;
     }
@@ -472,7 +471,7 @@
 </head>
 <body>
   <div class="scene">
-    <img class="scene-bg" id="sceneBg" src="./assets/Kishore_Kumar_new.png" width="1920" height="1080" alt="" draggable="false" />
+    <img class="scene-bg" id="sceneBg" src="./assets/Kishore_Kumar.png" width="1920" height="1080" alt="" draggable="false" />
     <div class="scene-shade" aria-hidden="true"></div>
 
     <header class="top-bar">
@@ -534,7 +533,7 @@
 
   <script>
     const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
-    const DEFAULT_BG = "./assets/Kishore_Kumar_new.png";
+    const DEFAULT_BG = "./assets/Kishore_Kumar.png";
     const STORAGE_KEY = "kishoreverse-source";
     const BG_DB = "kishoreverse-bg";
     const BG_STORE = "background";
