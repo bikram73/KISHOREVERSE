@@ -471,7 +471,10 @@
 </head>
 <body>
   <div class="scene">
-    <img class="scene-bg" id="sceneBg" src="./assets/Kishore_Kumar.png" width="1920" height="1080" alt="" draggable="false" />
+    <picture>
+      <source id="mobileBgSource" media="(max-width: 640px)" srcset="./assets/Kishore_Kumar_mobile.png" />
+      <img class="scene-bg" id="sceneBg" src="./assets/Kishore_Kumar.png" width="1920" height="1080" alt="" draggable="false" />
+    </picture>
     <div class="scene-shade" aria-hidden="true"></div>
 
     <header class="top-bar">
@@ -554,6 +557,7 @@
       form: $("playlistForm"),
       input: $("playlistInput"),
       scene: document.querySelector(".scene"),
+      mobileBgSource: $("mobileBgSource"),
       sceneBg: $("sceneBg"),
       bgInput: $("bgInput"),
       resetBg: $("resetBg"),
@@ -605,6 +609,7 @@
         customBgUrl = null;
       }
       els.sceneBg.src = DEFAULT_BG;
+      els.mobileBgSource.srcset = "./assets/Kishore_Kumar_mobile.png";
       els.scene.style.setProperty("--scene-image", `url("${DEFAULT_BG}")`);
       els.resetBg.hidden = true;
     }
@@ -613,6 +618,7 @@
       if (customBgUrl) URL.revokeObjectURL(customBgUrl);
       customBgUrl = URL.createObjectURL(blob);
       els.sceneBg.src = customBgUrl;
+      els.mobileBgSource.srcset = customBgUrl;
       els.scene.style.setProperty("--scene-image", `url("${customBgUrl}")`);
       els.resetBg.hidden = false;
     }
