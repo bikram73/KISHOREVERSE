@@ -502,6 +502,8 @@
           Change image
           <input id="bgInput" type="file" accept="image/*" />
         </label>
+        <button class="bar-btn" id="loadHindi" type="button">Load Hindi</button>
+        <button class="bar-btn" id="loadBengali" type="button">Load Bengali</button>
         <button class="bar-btn ghost" id="resetBg" type="button" hidden>Reset image</button>
       </div>
 
@@ -549,6 +551,9 @@
 
   <script>
     const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
+    const DEFAULT_PLAYLIST_URL = `https://www.youtube.com/playlist?list=${DEFAULT_PLAYLIST}`;
+    const BENGALI_PLAYLIST = "PLteSRTKLf30zAi6_iCozS5OJZRysd1Smv";
+    const BENGALI_PLAYLIST_URL = `https://youtube.com/playlist?list=${BENGALI_PLAYLIST}`;
     const DEFAULT_BG = "./assets/Kishore_Kumar.png";
     const STORAGE_KEY = "kishoreverse-source";
     const BG_DB = "kishoreverse-bg";
@@ -573,6 +578,8 @@
       mobileBgSource: $("mobileBgSource"),
       sceneBg: $("sceneBg"),
       bgInput: $("bgInput"),
+      loadHindi: $("loadHindi"),
+      loadBengali: $("loadBengali"),
       resetBg: $("resetBg"),
     };
 
@@ -835,7 +842,7 @@
         els.input.value = saved.displayValue || saved.source.id;
       } else {
         currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
-        els.input.value = `https://music.youtube.com/playlist?list=${DEFAULT_PLAYLIST}`;
+        els.input.value = DEFAULT_PLAYLIST_URL;
       }
 
       // Wait for a user gesture before autoplay — just cue/load silently
@@ -939,6 +946,24 @@
     els.resetBg.addEventListener("click", async () => {
       try { await clearBgBlob(); } catch { /* ignore */ }
       setDefaultBackground();
+    });
+
+    function loadNamedPlaylist(id, url) {
+      const source = { type: "playlist", id };
+      els.input.value = url;
+      rememberSource(source, url);
+      if (!loadSource(source, { autoplay: true })) {
+        els.title.textContent = "Player still loading…";
+        els.artist.textContent = "Try again in a second";
+      }
+    }
+
+    els.loadHindi.addEventListener("click", () => {
+      loadNamedPlaylist(DEFAULT_PLAYLIST, DEFAULT_PLAYLIST_URL);
+    });
+
+    els.loadBengali.addEventListener("click", () => {
+      loadNamedPlaylist(BENGALI_PLAYLIST, BENGALI_PLAYLIST_URL);
     });
 
     els.form.addEventListener("submit", (e) => {
