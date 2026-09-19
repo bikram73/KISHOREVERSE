@@ -542,6 +542,45 @@
 
     .screen-open:hover { transform: translateY(-2px); background: rgba(8,12,10,.82); }
 
+    .mobile-video-arrow {
+      display: none;
+      position: fixed;
+      top: 50%;
+      z-index: 52;
+      width: 34px;
+      height: 64px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(95, 190, 255, .8);
+      color: #54baff;
+      background: rgba(5, 34, 72, .8);
+      box-shadow: 0 0 18px rgba(45, 160, 255, .7), inset 0 0 12px rgba(65, 170, 255, .18);
+      cursor: pointer;
+      font: inherit;
+      font-size: 28px;
+      line-height: 1;
+      transform: translateY(-50%);
+      animation: mobileArrowPulse 1.15s ease-in-out infinite;
+    }
+
+    .mobile-video-arrow.is-left {
+      left: max(.25rem, env(safe-area-inset-left));
+      border-radius: 0 12px 12px 0;
+    }
+
+    .mobile-video-arrow.is-right {
+      right: max(.25rem, env(safe-area-inset-right));
+      border-radius: 12px 0 0 12px;
+    }
+
+    .mobile-video-arrow.is-left::before { content: "›"; }
+    .mobile-video-arrow.is-right::before { content: "‹"; }
+
+    @keyframes mobileArrowPulse {
+      0%, 100% { opacity: .55; box-shadow: 0 0 10px rgba(45, 160, 255, .45), inset 0 0 10px rgba(65, 170, 255, .14); }
+      50% { opacity: 1; box-shadow: 0 0 25px rgba(45, 175, 255, .95), inset 0 0 16px rgba(65, 190, 255, .3); }
+    }
+
     .screen-close,
     .screen-all {
       position: fixed;
@@ -605,6 +644,8 @@
     }
 
     @media (max-width: 760px) {
+      .screen-open.is-video-closed { display: none !important; }
+
       .github-link {
         right: max(.75rem, env(safe-area-inset-right));
         bottom: max(.75rem, env(safe-area-inset-bottom));
@@ -623,6 +664,8 @@
         font-size: .68rem;
         white-space: nowrap;
       }
+
+      .mobile-video-arrow.is-video-closed { display: flex; }
 
       #yt-host {
         width: min(320px, calc(100vw - 1.5rem)) !important;
@@ -819,6 +862,7 @@
   <button class="screen-close" id="screenClose" type="button" aria-label="Close everything except the background and branding">×</button>
   <button class="screen-open" id="screenOpen" type="button" aria-label="Show video">▶ Show video</button>
   <button class="screen-all" id="screenAll" type="button" aria-label="Show all interface controls">↗ Open all</button>
+  <button class="mobile-video-arrow is-right" id="mobileVideoArrow" type="button" aria-label="Show hidden video"></button>
 
   <script>
     const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
@@ -860,6 +904,7 @@
       screenClose: $("screenClose"),
       screenOpen: $("screenOpen"),
       screenAll: $("screenAll"),
+      mobileVideoArrow: $("mobileVideoArrow"),
     };
 
     let player = null;
@@ -898,6 +943,13 @@
       els.ytHost.style.top = `${ny}px`;
       els.ytHost.style.right = "auto";
       els.ytHost.style.bottom = "auto";
+    }
+
+    function updateMobileVideoArrow() {
+      const rect = els.ytHost.getBoundingClientRect();
+      const onLeft = rect.left + rect.width / 2 < window.innerWidth / 2;
+      els.mobileVideoArrow.classList.toggle("is-left", onLeft);
+      els.mobileVideoArrow.classList.toggle("is-right", !onLeft);
     }
 
     function snapYtToNearestEdge() {
@@ -952,6 +1004,7 @@
       ytMoveFrame = 0;
       els.ytHost.classList.remove("is-dragging");
       snapYtToNearestEdge();
+      updateMobileVideoArrow();
     }
 
     function minimizeInterface() {
@@ -977,6 +1030,8 @@
       els.ytHost.classList.add("is-closing");
       els.screenOpen.classList.add("is-video-closed");
       els.screenOpen.textContent = "▶ Show video";
+      updateMobileVideoArrow();
+      els.mobileVideoArrow.classList.add("is-video-closed");
       setTimeout(() => {
         if (!ytPlayerClosed) return;
         els.ytHost.style.display = "none";
@@ -990,6 +1045,7 @@
       els.ytHost.classList.remove("is-closing");
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
+      els.mobileVideoArrow.classList.remove("is-video-closed");
       els.ytHost.classList.add("is-opening");
       requestAnimationFrame(() => {
         if (position) setYtPosition(position.x, position.y, true);
@@ -1588,6 +1644,7 @@
 
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
     els.screenClose.addEventListener("click", minimizeInterface);
+    els.mobileVideoArrow.addEventListener("click", () => openYoutubeWindow());
     els.screenOpen.addEventListener("click", () => {
       if (ytPlayerClosed) openYoutubeWindow();
     });
