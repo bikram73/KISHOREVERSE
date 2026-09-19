@@ -519,30 +519,6 @@
     .github-link:hover { transform: translateY(-2px); background: rgba(8,12,10,.78); }
     .github-link svg { width: 18px; height: 18px; fill: currentColor; }
 
-    .screen-close {
-      position: fixed;
-      right: max(1rem, env(safe-area-inset-right));
-      bottom: max(4.1rem, calc(env(safe-area-inset-bottom) + 3.4rem));
-      z-index: 51;
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(255,255,255,.22);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      color: #fff;
-      background: rgba(8,12,10,.65);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 14px 40px rgba(0,0,0,.35);
-      cursor: pointer;
-      font: inherit;
-      font-size: 18px;
-      transition: transform 180ms ease, background 180ms ease;
-    }
-
-    .screen-close:hover { transform: translateY(-2px) scale(1.04); background: rgba(8,12,10,.82); }
-
     .screen-open {
       display: none;
       position: fixed;
@@ -574,7 +550,6 @@
       transform: translateY(10px);
     }
 
-    body.is-minimal .screen-close { display: none; }
     body.is-minimal .screen-open,
     .screen-open.is-video-closed { display: block; }
 
@@ -781,7 +756,6 @@
     <span>GitHub</span>
   </a>
 
-  <button class="screen-close" id="screenClose" type="button" aria-label="Minimize interface">×</button>
   <button class="screen-open" id="screenOpen" type="button" aria-label="Restore interface">↗ Open</button>
 
   <script>
@@ -821,7 +795,6 @@
       ytApiHost: $("yt-api-host"),
       ytDragHandle: $("ytDragHandle"),
       ytWindowClose: $("ytWindowClose"),
-      screenClose: $("screenClose"),
       screenOpen: $("screenOpen"),
     };
 
@@ -1539,7 +1512,6 @@
     els.ytDragHandle.addEventListener("pointercancel", endYtDrag);
 
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
-    els.screenClose.addEventListener("click", minimizeInterface);
     els.screenOpen.addEventListener("click", () => {
       restoreInterface();
       if (ytPlayerClosed) openYoutubeWindow();
