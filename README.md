@@ -4,7 +4,7 @@
 
 KISHOREVERSE is a lightweight, browser-based music player inspired by the visual atmosphere of classic Indian cinema. It uses a Kishore Kumar artwork background, a glassmorphism player, and the YouTube IFrame Player API to play a configurable YouTube / YouTube Music playlist directly in the browser.
 
-![KISHOREVERSE Preview](./assets/Kishor_Kumar_16x9.png)
+![KISHOREVERSE Preview](./assets/Kishore_Kumar.png)
 
 ---
 
