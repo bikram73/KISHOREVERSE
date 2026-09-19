@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>KISHOREVERSE · Kishore Kumar Music</title>
+  <link rel="icon" href="./assets/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="./assets/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0f1210;
+      --glass: rgba(18, 22, 20, 0.48);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --text: #f7f4ef;
+      --muted: rgba(247, 244, 239, 0.68);
+      --track: rgba(255, 255, 255, 0.22);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      overflow: hidden;
+      font-family: "Figtree", sans-serif;
+      color: var(--text);
+      background: #0b100e;
+      user-select: none;
+      -webkit-user-select: none;
+      overscroll-behavior: none;
+    }
+
+    img {
+      -webkit-user-drag: none;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .scene {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: #0b100e;
+      pointer-events: none;
+    }
+
+    .scene-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      image-rendering: auto;
+    }
+
+    .scene-shade {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(
+        180deg,
+        rgba(8, 12, 10, 0.12) 0%,
+        rgba(8, 12, 10, 0.02) 40%,
+        rgba(8, 12, 10, 0.28) 100%
+      );
+    }
+
+    .scene > *:not(.scene-bg):not(.scene-shade) {
+      pointer-events: auto;
+    }
+
+    .glass {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(14px) saturate(1.15);
+      -webkit-backdrop-filter: blur(14px) saturate(1.15);
+      box-shadow: var(--shadow);
+    }
+
+    .top-bar {
+      position: absolute;
+      inset: 0 0 auto 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.4rem;
+      padding-top: max(1.1rem, env(safe-area-inset-top));
+      padding-left: max(1.4rem, env(safe-area-inset-left));
+      padding-right: max(1.4rem, env(safe-area-inset-right));
+      pointer-events: none;
+    }
+
+    .pill {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      background: rgba(8, 12, 10, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      white-space: nowrap;
+    }
+
+    .clock {
+      font-size: 0.92rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .brand {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, 8px);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: brandIn 700ms 180ms ease forwards;
+    }
+
+    .playlist-link {
+      pointer-events: auto;
+      text-decoration: none;
+      transition: filter 140ms ease, transform 140ms ease, background 140ms ease;
+    }
+
+    .playlist-link:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      background: rgba(8, 12, 10, 0.68);
+    }
+
+    .player-dock {
+      position: absolute;
+      left: 50%;
+      bottom: max(1.6rem, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 6;
+      width: min(720px, calc(100% - 1.6rem));
+      display: grid;
+      gap: 0.55rem;
+      opacity: 0;
+      animation: dockIn 800ms 280ms ease forwards;
+    }
+
+    .playlist-bar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.45rem;
+      align-items: center;
+      padding: 0.4rem 0.4rem 0.4rem 0.85rem;
+      border-radius: 999px;
+    }
+
+    .playlist-bar input[type="url"] {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .playlist-bar input[type="url"]::placeholder {
+      color: var(--muted);
+    }
+
+    .bar-btn {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.45rem 0.85rem;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter 140ms ease, transform 140ms ease;
+    }
+
+    .bar-btn:hover { filter: brightness(0.96); }
+    .bar-btn:active { transform: scale(0.97); }
+
+    .image-bar {
+      display: flex;
+      gap: 0.45rem;
+      justify-content: flex-end;
+    }
+
+    .image-bar .bar-btn {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .image-bar .bar-btn.ghost {
+      background: rgba(8, 12, 10, 0.55);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: none;
+    }
+
+    .image-bar label.bar-btn {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .image-bar input[type="file"] {
+      display: none;
+    }
+
+    .player {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.95rem;
+      align-items: center;
+      padding: 0.72rem 0.85rem 0.72rem 0.72rem;
+      border-radius: 999px;
+    }
+
+    .art {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
+    }
+
+    .art.is-spinning {
+      animation: artSpin 8s linear infinite;
+    }
+
+    .meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+      padding-right: 0.35rem;
+    }
+
+    .title,
+    .artist {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .artist {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .progress-wrap {
+      margin-top: 0.12rem;
+    }
+
+    .progress {
+      position: relative;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--track);
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .progress-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      border-radius: inherit;
+      background: #fff;
+      pointer-events: none;
+    }
+
+    .progress-knob {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+
+    .progress:hover .progress-knob,
+    .progress.is-dragging .progress-knob {
+      opacity: 1;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding-right: 0.2rem;
+    }
+
+    .ctrl {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    .ctrl:hover { background: rgba(255, 255, 255, 0.1); }
+    .ctrl:active { transform: scale(0.94); }
+
+    .ctrl svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .play {
+      width: 42px;
+      height: 42px;
+      margin: 0 0.1rem;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .play:hover { filter: brightness(0.96); }
+    .play .icon-pause { display: none; }
+    .play.is-playing .icon-play { display: none; }
+    .play.is-playing .icon-pause { display: block; }
+
+    #yt-host,
+    #yt-host iframe {
+      position: fixed !important;
+      width: 320px !important;
+      height: 180px !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      opacity: 0.001 !important;
+      pointer-events: none !important;
+      z-index: -1 !important;
+      border: 0 !important;
+    }
+
+    @keyframes brandIn {
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    @keyframes dockIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @keyframes artSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 640px) {
+      .scene-bg { object-position: center 38%; }
+
+      .playlist-link { font-size: 0.72rem; }
+
+      .top-bar {
+        padding: 0.9rem;
+        padding-top: max(0.9rem, env(safe-area-inset-top));
+        padding-left: max(0.9rem, env(safe-area-inset-left));
+        padding-right: max(0.9rem, env(safe-area-inset-right));
+      }
+
+      .brand { display: none; }
+
+      .player-dock {
+        bottom: max(1rem, env(safe-area-inset-bottom));
+        width: calc(100% - 1rem);
+      }
+
+      .playlist-bar { padding: 0.35rem 0.35rem 0.35rem 0.7rem; }
+      .playlist-bar input[type="url"] { font-size: 0.74rem; }
+      .bar-btn { padding: 0.4rem 0.7rem; }
+
+      .image-bar { justify-content: stretch; }
+      .image-bar .bar-btn {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .player {
+        grid-template-columns: auto 1fr;
+        grid-template-areas:
+          "art meta"
+          "controls controls";
+        border-radius: 28px;
+        gap: 0.7rem;
+        padding: 0.7rem;
+      }
+
+      .art {
+        grid-area: art;
+        width: 52px;
+        height: 52px;
+      }
+
+      .meta { grid-area: meta; }
+
+      .controls {
+        grid-area: controls;
+        justify-content: center;
+        padding: 0.15rem 0 0.1rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .brand,
+      .player-dock {
+        animation: none;
+        opacity: 1;
+      }
+
+      .brand { transform: translate(-50%, 0); }
+      .player-dock { transform: translateX(-50%); }
+      .art.is-spinning { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <img class="scene-bg" id="sceneBg" src="./assets/kishoreverse-bg.webp" alt="" draggable="false" />
+    <div class="scene-shade" aria-hidden="true"></div>
+
+    <header class="top-bar">
+      <div class="pill clock" id="clock">--:--</div>
+      <div class="pill brand">KISHOREVERSE</div>
+      <a class="pill playlist-link" href="https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV" target="_blank" rel="noopener noreferrer">🎵 Open Playlist ↗</a>
+    </header>
+
+    <div class="player-dock">
+      <div class="image-bar">
+        <label class="bar-btn">
+          Change image
+          <input id="bgInput" type="file" accept="image/*" />
+        </label>
+        <button class="bar-btn ghost" id="resetBg" type="button" hidden>Reset image</button>
+      </div>
+
+      <form class="playlist-bar glass" id="playlistForm" autocomplete="off">
+        <input
+          id="playlistInput"
+          type="url"
+          inputmode="url"
+          spellcheck="false"
+          placeholder="Paste YouTube / YT Music playlist or song URL"
+          aria-label="YouTube playlist or song URL"
+        />
+        <button class="bar-btn" type="submit">Load</button>
+      </form>
+
+      <div class="player glass" role="region" aria-label="Music player">
+        <img class="art" id="art" alt="" draggable="false" />
+        <div class="meta">
+          <div class="title" id="title">Kishore Kumar · Music Lives Forever</div>
+          <div class="artist" id="artist">YouTube Music</div>
+          <div class="progress-wrap">
+            <div class="progress" id="progress" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+              <div class="progress-fill" id="progressFill"></div>
+              <div class="progress-knob" id="progressKnob"></div>
+            </div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctrl" id="prev" type="button" aria-label="Previous song">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6V6zm3.5 6 8.5 6V6l-8.5 6z"/></svg>
+          </button>
+          <button class="ctrl play" id="play" type="button" aria-label="Play">
+            <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
+          </button>
+          <button class="ctrl" id="next" type="button" aria-label="Next song">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6h2v12h-2V6zM6 18l8.5-6L6 6v12z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="yt-host"></div>
+
+  <script>
+    const DEFAULT_PLAYLIST = "PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV";
+    const DEFAULT_BG = "./assets/kishoreverse-bg.webp";
+    const STORAGE_KEY = "kishoreverse-source";
+    const BG_DB = "kishoreverse-bg";
+    const BG_STORE = "background";
+    const MAX_BG_EDGE = 1920;
+
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      clock: $("clock"),
+      title: $("title"),
+      artist: $("artist"),
+      art: $("art"),
+      progress: $("progress"),
+      progressFill: $("progressFill"),
+      progressKnob: $("progressKnob"),
+      play: $("play"),
+      prev: $("prev"),
+      next: $("next"),
+      form: $("playlistForm"),
+      input: $("playlistInput"),
+      sceneBg: $("sceneBg"),
+      bgInput: $("bgInput"),
+      resetBg: $("resetBg"),
+    };
+
+    let player = null;
+    let ready = false;
+    let seeking = false;
+    let currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
+    let customBgUrl = null;
+    let errorSkips = 0;
+    let wantPlay = false;
+
+    function openBgDb() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(BG_DB, 1);
+        req.onupgradeneeded = () => {
+          if (!req.result.objectStoreNames.contains(BG_STORE)) {
+            req.result.createObjectStore(BG_STORE);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function withBgStore(mode, run) {
+      const db = await openBgDb();
+      try {
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction(BG_STORE, mode);
+          const req = run(tx.objectStore(BG_STORE));
+          req.onsuccess = () => resolve(req.result ?? null);
+          req.onerror = () => reject(req.error);
+          tx.onerror = () => reject(tx.error);
+        });
+      } finally {
+        db.close();
+      }
+    }
+
+    const saveBgBlob = (blob) => withBgStore("readwrite", (s) => s.put(blob, "custom"));
+    const loadBgBlob = () => withBgStore("readonly", (s) => s.get("custom"));
+    const clearBgBlob = () => withBgStore("readwrite", (s) => s.delete("custom"));
+
+    function setDefaultBackground() {
+      if (customBgUrl) {
+        URL.revokeObjectURL(customBgUrl);
+        customBgUrl = null;
+      }
+      els.sceneBg.src = DEFAULT_BG;
+      els.resetBg.hidden = true;
+    }
+
+    function setCustomBackground(blob) {
+      if (customBgUrl) URL.revokeObjectURL(customBgUrl);
+      customBgUrl = URL.createObjectURL(blob);
+      els.sceneBg.src = customBgUrl;
+      els.resetBg.hidden = false;
+    }
+
+    function compressImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          const scale = Math.min(1, MAX_BG_EDGE / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(
+            (blob) => (blob ? resolve(blob) : reject(new Error("compress failed"))),
+            "image/jpeg",
+            0.85
+          );
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("invalid image"));
+        };
+        img.src = url;
+      });
+    }
+
+    async function restoreCustomBackground() {
+      try {
+        const blob = await loadBgBlob();
+        if (blob) setCustomBackground(blob);
+        else setDefaultBackground();
+      } catch {
+        setDefaultBackground();
+      }
+    }
+
+    function updateClock() {
+      els.clock.textContent = new Date()
+        .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+        .toLowerCase();
+    }
+
+    function setPlaying(isPlaying) {
+      els.play.classList.toggle("is-playing", isPlaying);
+      els.play.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
+      els.art.classList.toggle("is-spinning", isPlaying);
+    }
+
+    function setProgress(current, duration) {
+      const pct = duration > 0 ? (current / duration) * 100 : 0;
+      els.progressFill.style.width = `${pct}%`;
+      els.progressKnob.style.left = `${pct}%`;
+      els.progress.setAttribute("aria-valuenow", String(Math.round(pct)));
+    }
+
+    function cleanArtistName(name) {
+      return String(name || "")
+        .replace(/\s*-\s*Topic\s*$/i, "")
+        .trim() || "YouTube Music";
+    }
+
+    function refreshMeta() {
+      if (!player?.getVideoData) return;
+      const data = player.getVideoData() || {};
+      const title = data.title || "Untitled track";
+      const artist = cleanArtistName(data.author);
+      const videoId = data.video_id;
+
+      els.title.textContent = title;
+      els.artist.textContent = artist;
+      document.title = `${title} · KISHOREVERSE`;
+
+      if (videoId) {
+        els.art.src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+        els.art.alt = `Cover for ${title}`;
+      }
+    }
+
+    function tick() {
+      if (!player || seeking) return;
+      setProgress(player.getCurrentTime?.() ?? 0, player.getDuration?.() ?? 0);
+    }
+
+    function seekFromClientX(clientX) {
+      if (!player || !ready) return;
+      const rect = els.progress.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      const duration = player.getDuration?.() ?? 0;
+      const target = duration * ratio;
+      setProgress(target, duration);
+      return target;
+    }
+
+    function playlistLength() {
+      return player?.getPlaylist?.()?.length ?? 0;
+    }
+
+    function parseYouTubeInput(raw) {
+      const value = String(raw || "").trim();
+      if (!value) return null;
+      if (/^(PL|OL|UU|LL|RD|SD)[\w-]{10,}$/i.test(value)) return { type: "playlist", id: value };
+      if (/^[\w-]{11}$/.test(value)) return { type: "video", id: value };
+
+      let url;
+      try {
+        url = new URL(value);
+      } catch {
+        return null;
+      }
+
+      const host = url.hostname.replace(/^www\./, "");
+      const list = url.searchParams.get("list");
+      const video =
+        url.searchParams.get("v") ||
+        (host === "youtu.be" ? url.pathname.slice(1).split("/")[0] : null) ||
+        (url.pathname.startsWith("/shorts/") ? url.pathname.split("/")[2] : null) ||
+        (url.pathname.startsWith("/embed/") ? url.pathname.split("/")[2] : null);
+
+      if (list && /^(PL|OL|UU|LL|RD|SD)[\w-]*/i.test(list)) return { type: "playlist", id: list };
+      if (video && /^[\w-]{11}$/.test(video)) return { type: "video", id: video };
+      return null;
+    }
+
+    function rememberSource(source, displayValue) {
+      currentSource = source;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ source, displayValue }));
+    }
+
+    function showPlayError(code) {
+      const blocked = code === 101 || code === 150 || code === 153;
+      els.title.textContent = blocked
+        ? "Can’t embed these tracks"
+        : "Couldn’t play that link";
+      els.artist.textContent = blocked
+        ? "YT Music “Topic” songs often block embeds — try a regular YouTube playlist"
+        : "Paste a public YouTube playlist or video URL";
+      setPlaying(false);
+      wantPlay = false;
+    }
+
+    function tryPlay() {
+      if (!player || !ready) return;
+      wantPlay = true;
+      try {
+        const state = player.getPlayerState();
+        if (state === YT.PlayerState.CUED || state === YT.PlayerState.PAUSED || state === YT.PlayerState.UNSTARTED) {
+          player.playVideo();
+        } else if (state === YT.PlayerState.PLAYING) {
+          /* already playing */
+        } else {
+          player.playVideo();
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    function loadSource(source, { autoplay = true } = {}) {
+      if (!player || !ready) return false;
+
+      errorSkips = 0;
+      wantPlay = autoplay;
+      setProgress(0, 0);
+      setPlaying(false);
+      els.artist.textContent = "YouTube Music";
+
+      if (source.type === "playlist") {
+        els.title.textContent = "Loading playlist…";
+        const payload = {
+          listType: "playlist",
+          list: source.id,
+          index: 0,
+        };
+        if (autoplay) player.loadPlaylist(payload);
+        else player.cuePlaylist(payload);
+      } else {
+        els.title.textContent = "Loading song…";
+        if (autoplay) player.loadVideoById(source.id);
+        else player.cueVideoById(source.id);
+      }
+
+      return true;
+    }
+
+    function onPlayerReady() {
+      ready = true;
+      setInterval(tick, 250);
+
+      let saved = null;
+      try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      } catch {
+        saved = null;
+      }
+
+      if (saved?.source?.id) {
+        currentSource = saved.source;
+        els.input.value = saved.displayValue || saved.source.id;
+      } else {
+        currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
+        els.input.value = `https://music.youtube.com/playlist?list=${DEFAULT_PLAYLIST}`;
+      }
+
+      // Wait for a user gesture before autoplay — just cue/load silently
+      loadSource(currentSource, { autoplay: false });
+      refreshMeta();
+      tick();
+    }
+
+    function onPlayerStateChange(event) {
+      const { PLAYING, PAUSED, ENDED, CUED, BUFFERING } = YT.PlayerState;
+
+      if (event.data === PLAYING || event.data === BUFFERING) {
+        errorSkips = 0;
+      }
+
+      if (event.data === PLAYING) {
+        setPlaying(true);
+        refreshMeta();
+      } else if (event.data === PAUSED) {
+        setPlaying(false);
+      } else if (event.data === ENDED) {
+        setPlaying(false);
+        if (currentSource.type === "playlist" && playlistLength() > 0) {
+          player.playVideoAt(0);
+        } else if (currentSource.type === "video") {
+          player.seekTo(0, true);
+          player.playVideo();
+        }
+      } else if (event.data === CUED) {
+        refreshMeta();
+        tick();
+        if (wantPlay) tryPlay();
+      }
+    }
+
+    function onPlayerError(event) {
+      const code = event?.data;
+      const len = playlistLength();
+      const idx = player.getPlaylistIndex?.() ?? 0;
+
+      if (currentSource.type === "playlist") {
+        errorSkips += 1;
+        const limit = len > 0 ? len : 6;
+        if (errorSkips < limit) {
+          setTimeout(() => {
+            try {
+              if (len > 0) player.playVideoAt((idx + 1) % len);
+              else player.nextVideo();
+            } catch {
+              /* ignore */
+            }
+          }, 250);
+          return;
+        }
+      }
+
+      showPlayError(code);
+    }
+
+    function createPlayer() {
+      const playerVars = {
+        autoplay: 0,
+        controls: 0,
+        disablekb: 1,
+        fs: 0,
+        modestbranding: 1,
+        playsinline: 1,
+        rel: 0,
+        enablejsapi: 1,
+      };
+      if (window.location.protocol.startsWith("http")) {
+        playerVars.origin = window.location.origin;
+        playerVars.widget_referrer = window.location.href;
+      }
+
+      player = new YT.Player("yt-host", {
+        height: "180",
+        width: "320",
+        playerVars,
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError,
+        },
+      });
+    }
+
+    els.bgInput.addEventListener("change", async () => {
+      const file = els.bgInput.files?.[0];
+      els.bgInput.value = "";
+      if (!file?.type.startsWith("image/")) return;
+      try {
+        const blob = await compressImageFile(file);
+        await saveBgBlob(blob);
+        setCustomBackground(blob);
+      } catch {
+        /* keep current background */
+      }
+    });
+
+    els.resetBg.addEventListener("click", async () => {
+      try { await clearBgBlob(); } catch { /* ignore */ }
+      setDefaultBackground();
+    });
+
+    els.form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const parsed = parseYouTubeInput(els.input.value);
+      if (!parsed) {
+        els.title.textContent = "Invalid YouTube link";
+        els.artist.textContent = "Paste a playlist or song URL";
+        return;
+      }
+      rememberSource(parsed, els.input.value.trim());
+      if (!loadSource(parsed, { autoplay: true })) {
+        els.title.textContent = "Player still loading…";
+        els.artist.textContent = "Try again in a second";
+      }
+    });
+
+    els.play.addEventListener("click", () => {
+      if (!player || !ready) return;
+      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+        wantPlay = false;
+        player.pauseVideo();
+      } else {
+        tryPlay();
+      }
+    });
+
+    els.prev.addEventListener("click", () => {
+      if (!player || !ready) return;
+      if (currentSource.type !== "playlist") {
+        player.seekTo(0, true);
+        return;
+      }
+      const len = playlistLength();
+      const idx = player.getPlaylistIndex?.() ?? 0;
+      if (len > 0 && idx <= 0) player.playVideoAt(len - 1);
+      else player.previousVideo();
+    });
+
+    els.next.addEventListener("click", () => {
+      if (!player || !ready) return;
+      if (currentSource.type !== "playlist") {
+        player.seekTo(0, true);
+        player.playVideo();
+        return;
+      }
+      const len = playlistLength();
+      const idx = player.getPlaylistIndex?.() ?? 0;
+      if (len > 0 && idx >= len - 1) player.playVideoAt(0);
+      else player.nextVideo();
+    });
+
+    els.progress.addEventListener("pointerdown", (e) => {
+      if (!ready) return;
+      els.progress.setPointerCapture(e.pointerId);
+      seeking = true;
+      els.progress.classList.add("is-dragging");
+      seekFromClientX(e.clientX);
+    });
+
+    els.progress.addEventListener("pointermove", (e) => {
+      if (seeking) seekFromClientX(e.clientX);
+    });
+
+    function endSeek(e) {
+      if (!seeking) return;
+      const target = seekFromClientX(e.clientX);
+      if (typeof target === "number") player.seekTo(target, true);
+      seeking = false;
+      els.progress.classList.remove("is-dragging");
+    }
+
+    els.progress.addEventListener("pointerup", endSeek);
+    els.progress.addEventListener("pointercancel", endSeek);
+
+    els.progress.addEventListener("keydown", (e) => {
+      if (!player || !ready) return;
+      const duration = player.getDuration?.() ?? 0;
+      const current = player.getCurrentTime?.() ?? 0;
+      let next = current;
+      if (e.key === "ArrowRight") next = Math.min(duration, current + 5);
+      else if (e.key === "ArrowLeft") next = Math.max(0, current - 5);
+      else return;
+      e.preventDefault();
+      player.seekTo(next, true);
+      setProgress(next, duration);
+    });
+
+    restoreCustomBackground();
+    updateClock();
+    setInterval(updateClock, 15000);
+
+    window.onYouTubeIframeAPIReady = createPlayer;
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+  </script>
+</body>
+</html>
