@@ -882,9 +882,18 @@
           listType: "playlist",
           list: source.id,
           index: 0,
+          startSeconds: 0,
         };
         if (autoplay) player.loadPlaylist(payload);
-        else player.cuePlaylist(payload);
+        else {
+          player.cuePlaylist(payload);
+          setTimeout(() => {
+            if (!wantPlay && playlistLength() > 0) {
+              player.playVideoAt(0);
+              player.pauseVideo();
+            }
+          }, 900);
+        }
         if (autoplay) {
           setTimeout(() => {
             if (wantPlay) tryPlay();
@@ -903,22 +912,12 @@
       ready = true;
       setInterval(tick, 250);
 
-      let saved = null;
-      try {
-        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-      } catch {
-        saved = null;
-      }
-
       if (pendingSource?.id) {
         currentSource = pendingSource;
         pendingSource = null;
         els.input.value = currentSource.id === BENGALI_PLAYLIST
           ? BENGALI_PLAYLIST_URL
           : DEFAULT_PLAYLIST_URL;
-      } else if (saved?.source?.id) {
-        currentSource = saved.source;
-        els.input.value = saved.displayValue || saved.source.id;
       } else {
         currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
         els.input.value = DEFAULT_PLAYLIST_URL;
