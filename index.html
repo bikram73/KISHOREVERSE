@@ -572,7 +572,8 @@
 
     .screen-all {
       display: none;
-      bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 6.5rem);
+      left: max(1rem, env(safe-area-inset-left)) !important;
+      bottom: max(1rem, env(safe-area-inset-bottom));
       padding: .55rem .8rem;
       border-radius: 999px;
     }
