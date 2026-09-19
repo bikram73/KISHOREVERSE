@@ -581,6 +581,25 @@
     .screen-open:hover,
     .screen-open:focus-visible { transform: translateY(-2px); background: #2498ff; box-shadow: 0 0 16px rgba(36, 152, 255, .5); }
 
+    @media (min-width: 761px) {
+      .screen-open.is-video-closed {
+        animation: showVideoGlow 1.4s ease-in-out infinite;
+      }
+    }
+
+    @keyframes showVideoGlow {
+      0%, 100% {
+        background: rgba(8, 12, 10, .68);
+        border-color: rgba(255, 255, 255, .22);
+        box-shadow: 0 0 8px rgba(36, 152, 255, .35);
+      }
+      50% {
+        background: #2498ff;
+        border-color: rgba(170, 225, 255, .95);
+        box-shadow: 0 0 24px rgba(36, 152, 255, .95);
+      }
+    }
+
     .mobile-video-arrow {
       display: none;
       position: fixed;
@@ -890,6 +909,7 @@
       .player-dock { transform: translateX(-50%); }
       .art.is-spinning { animation: none; }
       .screen-all.is-playing img { animation: none; }
+      .screen-open.is-video-closed { animation: none; }
     }
   </style>
 </head>
