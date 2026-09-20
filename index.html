@@ -6,21 +6,21 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />  
   <title>KISHOREVERSE · Kishore Kumar Music</title>
   <!-- Responsive Favicons for All Devices -->
-  <link rel="icon" type="image/png" href="./assets/Kishore_Kumar_tab.png" />
-  <link rel="shortcut icon" type="image/png" href="./assets/Kishore_Kumar_tab.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="./assets/Kishore_Kumar_tab.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="./assets/Kishore_Kumar_tab.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./assets/Kishore_Kumar_tab.png" />
+  <link rel="icon" type="image/png" href="./assets/Kishore_Kumar_title.png" />
+  <link rel="shortcut icon" type="image/png" href="./assets/Kishore_Kumar_title.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="./assets/Kishore_Kumar_title.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/Kishore_Kumar_title.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/Kishore_Kumar_title.png" />
   
   <!-- Apple Touch Icons for iOS Safari -->
-  <link rel="apple-touch-icon" href="./assets/Kishore_Kumar_tab.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="./assets/Kishore_Kumar_tab.png" />
+  <link rel="apple-touch-icon" href="./assets/Kishore_Kumar_title.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/Kishore_Kumar_title.png" />
   
   <!-- Android Chrome Icons -->
-  <link rel="icon" type="image/png" sizes="512x512" href="./assets/Kishore_Kumar_tab.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./assets/Kishore_Kumar_title.png" />
   
   <!-- Microsoft Tiles -->
-  <meta name="msapplication-TileImage" content="./assets/Kishore_Kumar_tab.png" />
+  <meta name="msapplication-TileImage" content="./assets/Kishore_Kumar_title.png" />
   <meta name="msapplication-TileColor" content="#0b100e" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1337,22 +1337,10 @@
 
     const $ = (id) => document.getElementById(id);
 
-    // Responsive Favicon Management
+    // Responsive Favicon Management - Use title image for all devices
     function updateResponsiveFavicon() {
-      const width = window.innerWidth;
-      let faviconPath;
-      
-      // Determine favicon based on device/screen size
-      if (width <= 760) {
-        // Mobile
-        faviconPath = './assets/Kishore_Kumar_mobile.png';
-      } else if (width >= 761 && width <= 1024) {
-        // Tablet
-        faviconPath = './assets/Kishore_Kumar_tab.png';
-      } else {
-        // Desktop
-        faviconPath = './assets/Kishore_Kumar.png';
-      }
+      // Always use the title image for all devices
+      const faviconPath = './assets/Kishore_Kumar_title.png';
       
       // Update all favicon links
       const faviconLinks = document.querySelectorAll('link[rel*="icon"]');
@@ -2618,20 +2606,8 @@
     updateSpeakerState();
     requestAnimationFrame(positionResetButton);
     
-    // Initialize responsive favicon
+    // Initialize favicon
     updateResponsiveFavicon();
-    
-    // Update favicon on resize with debouncing
-    let faviconResizeTimeout;
-    window.addEventListener('resize', () => {
-      clearTimeout(faviconResizeTimeout);
-      faviconResizeTimeout = setTimeout(updateResponsiveFavicon, 100);
-    });
-    
-    // Update favicon on orientation change (mobile/tablet)
-    window.addEventListener('orientationchange', () => {
-      setTimeout(updateResponsiveFavicon, 200);
-    });
     
     if (isPageReload()) startReloadPlay(); // on refresh: play Kishore_Kumar.mp3, then autoplay the Hindi default playlist
 
