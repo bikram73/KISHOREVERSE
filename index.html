@@ -275,11 +275,17 @@
       align-items: center;
     }
 
-    /* Small round speaker sitting on top of the "Load Bengali" button */
+    /* Wrappers so a small control can sit on top of "Load Hindi" / "Load Bengali" */
+    .hindi-wrap,
     .bengali-wrap {
       position: relative;
       display: inline-flex;
     }
+
+    /* Tablet-only "Show Video" button (shown on top of Load Hindi, see tablet media query) */
+    .tab-show-video { display: none; }
+
+    /* Small round speaker sitting on top of the "Load Bengali" button */
 
     .speaker-btn {
       appearance: none;
@@ -810,6 +816,23 @@
       height: 180px !important;
     }
 
+    /* Tablet view: "Show Video" sits on top of "Load Hindi" */
+    @media (min-width: 761px) and (max-width: 1024px) {
+      /* the corner button is only used in the hidden-interface view on tablets */
+      body:not(.is-minimal) .screen-open.is-video-closed { display: none; }
+
+      .tab-show-video.is-video-closed {
+        display: inline-block;
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 0.4rem);
+        transform: translateX(-50%);
+        animation: showVideoGlow 1.4s ease-in-out infinite;
+      }
+
+      .tab-show-video.is-video-closed:active { transform: translateX(-50%) scale(0.97); }
+    }
+
     @media (max-width: 760px) {
       .screen-open.is-video-closed { display: none !important; }
 
@@ -938,8 +961,17 @@
         text-align: center;
       }
 
+      .image-bar > div .hindi-wrap,
       .image-bar > div .bengali-wrap {
-        flex: 1; /* Keep Load Bengali the same width with the speaker on top */
+        flex: 1; /* Keep Load Hindi / Load Bengali the same width */
+      }
+
+      /* Line the speaker up with the "Show Video" button: that button is lifted by
+         the image-bar gap (.45rem) plus its own bottom margin (.45rem). */
+      .speaker-btn {
+        bottom: calc(100% + 0.9rem);
+        width: 28px;
+        height: 28px;
       }
 
       .github-link {
@@ -1089,6 +1121,7 @@
       .screen-all.is-playing img { animation: none; }
       .screen-open.is-video-closed { animation: none; }
       body.is-minimal .screen-open.is-video-closed { animation: none; }
+      .tab-show-video.is-video-closed { animation: none; }
       .yt-drag-handle,
       .yt-drag-handle::before { animation: none; }
       .brand { animation: none; opacity: 1; transform: translate(-50%, 0); }
@@ -1100,6 +1133,7 @@
   <div class="scene">
     <picture>
       <source id="mobileBgSource" media="(max-width: 640px)" srcset="./assets/Kishore_Kumar_mobile.png" />
+      <source id="tabBgSource" media="(min-width: 761px) and (max-width: 1024px)" srcset="./assets/Kishore_Kumar_tab.png" />
       <img class="scene-bg" id="sceneBg" src="./assets/Kishore_Kumar.png" width="1920" height="1080" alt="" draggable="false" />
     </picture>
     <div class="scene-shade" aria-hidden="true"></div>
@@ -1121,7 +1155,10 @@
             Change image
             <input id="bgInput" type="file" accept="image/*" />
           </label>
-          <button class="bar-btn" id="loadHindi" type="button">Load Hindi</button>
+          <span class="hindi-wrap">
+            <button class="bar-btn tab-show-video is-video-open" id="tabShowVideo" type="button">Show Video</button>
+            <button class="bar-btn" id="loadHindi" type="button">Load Hindi</button>
+          </span>
           <span class="bengali-wrap">
             <button class="speaker-btn" id="speakerBtn" type="button" aria-label="Play Kishore Kumar music" title="Play Kishore Kumar music">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg>
@@ -1201,7 +1238,11 @@
     const BG_DB = "kishoreverse-bg";
     const BG_STORE = "background";
     const MAX_BG_EDGE = 1920;
-    const KISHORE_AUDIO_SRC = "./assets/Kishooore_Kumar.mp3";
+    // Tried in order; the first file the browser can play is used
+    const KISHORE_AUDIO_SOURCES = [
+      "./assets/Kishore_Kumar.mp4",
+      "./assets/Kishooore_Kumar.mp3",
+    ];
 
     const $ = (id) => document.getElementById(id);
     const els = {
@@ -1219,6 +1260,7 @@
       input: $("playlistInput"),
       scene: document.querySelector(".scene"),
       mobileBgSource: $("mobileBgSource"),
+      tabBgSource: $("tabBgSource"),
       sceneBg: $("sceneBg"),
       bgInput: $("bgInput"),
       loadHindi: $("loadHindi"),
@@ -1235,6 +1277,7 @@
       screenAllThumb: $("screenAllThumb"),
       mobileVideoArrow: $("mobileVideoArrow"),
       mobileShowVideo: $("mobileShowVideo"),
+      tabShowVideo: $("tabShowVideo"),
     };
 
     let player = null;
@@ -1470,6 +1513,8 @@
       els.ytHost.classList.remove("mobile-video-open"); // Remove mobile video open class
       els.screenOpen.classList.add("is-video-closed");
       els.screenOpen.textContent = "▶ Show video";
+      els.tabShowVideo.classList.remove("is-video-open");
+      els.tabShowVideo.classList.add("is-video-closed");
       
       // Show the mobile video button again on mobile
       if (window.innerWidth <= 760) {
@@ -1510,6 +1555,8 @@
       host.classList.add("is-position-restored", "is-mobile-open");
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
+      els.tabShowVideo.classList.remove("is-video-closed");
+      els.tabShowVideo.classList.add("is-video-open");
 
       // Position: explicit > last dragged position > default
       const rect = host.getBoundingClientRect();
@@ -1583,6 +1630,7 @@
       }
       els.sceneBg.src = DEFAULT_BG;
       els.mobileBgSource.srcset = "./assets/Kishore_Kumar_mobile.png";
+      els.tabBgSource.srcset = "./assets/Kishore_Kumar_tab.png";
       els.scene.style.setProperty("--scene-image", `url("${DEFAULT_BG}")`);
       els.resetBg.hidden = true;
     }
@@ -1592,6 +1640,7 @@
       customBgUrl = URL.createObjectURL(blob);
       els.sceneBg.src = customBgUrl;
       els.mobileBgSource.srcset = customBgUrl;
+      els.tabBgSource.srcset = customBgUrl;
       els.scene.style.setProperty("--scene-image", `url("${customBgUrl}")`);
       els.resetBg.hidden = false;
     }
@@ -1661,8 +1710,15 @@
 
     function getKishoreAudio() {
       if (!kishoreAudio) {
-        kishoreAudio = new Audio(KISHORE_AUDIO_SRC);
+        kishoreAudio = document.createElement("audio");
         kishoreAudio.preload = "auto";
+        kishoreAudio.setAttribute("playsinline", "");
+        KISHORE_AUDIO_SOURCES.forEach((src) => {
+          const source = document.createElement("source");
+          source.src = src;
+          kishoreAudio.appendChild(source);
+        });
+        kishoreAudio.load();
         ["play", "playing", "pause", "ended", "error"].forEach((evt) =>
           kishoreAudio.addEventListener(evt, updateSpeakerState)
         );
@@ -1698,7 +1754,8 @@
         updateSpeakerState();
         return Promise.resolve(result)
           .then(() => true)
-          .catch(() => {
+          .catch((err) => {
+            console.warn("Kishore Kumar audio did not start:", err?.name || err);
             updateSpeakerState();
             return false;
           });
@@ -2261,6 +2318,9 @@
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
     els.screenClose.addEventListener("click", minimizeInterface);
     els.mobileShowVideo.addEventListener("click", () => {
+      if (ytPlayerClosed) openYoutubeWindow();
+    });
+    els.tabShowVideo.addEventListener("click", () => {
       if (ytPlayerClosed) openYoutubeWindow();
     });
     els.screenOpen.addEventListener("click", () => {
