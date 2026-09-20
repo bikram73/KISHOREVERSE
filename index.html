@@ -758,6 +758,15 @@
     @media (max-width: 760px) {
       .screen-open.is-video-closed { display: none !important; }
 
+      /* After tapping × (minimal view) show the "Show video" button at the
+         bottom-left, directly above the round thumbnail button. */
+      body.is-minimal .screen-open.is-video-closed {
+        display: block !important;
+        left: max(1rem, env(safe-area-inset-left));
+        right: auto;
+        bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 48px + .65rem);
+      }
+
       /* Make mobile video button same size as Load Hindi button */
       .mobile-show-video {
         display: inline-block;
@@ -1369,6 +1378,8 @@
       if (ytWasOpenBeforeMinimal) {
         const rect = els.ytHost.getBoundingClientRect();
         ytPositionBeforeMinimal = { x: rect.left, y: rect.top };
+        // Save the position in --yt-left / --yt-top so it can be restored and dragged later
+        placeYtInstant(rect.left, rect.top);
       } else {
         ytPositionBeforeMinimal = null;
       }
@@ -1404,51 +1415,60 @@
     }
 
     function openYoutubeWindow(position = null) {
+      const host = els.ytHost;
       const isMobile = window.innerWidth <= 760;
+      const prevTransition = host.style.transition;
+
+      // Lay the player out without animation so it never glides in from another spot
+      host.style.transition = "none";
 
       // On mobile, add special class to show the video
       if (isMobile) {
-        els.ytHost.classList.add("mobile-video-open");
+        host.classList.add("mobile-video-open");
         // Hide the show video button on mobile
         els.mobileShowVideo.classList.remove("is-video-closed");
         els.mobileShowVideo.classList.add("is-video-open");
       }
-      
-      els.ytHost.style.display = "block";
+
+      host.style.display = "block";
       ytPlayerClosed = false;
-      els.ytHost.classList.remove("is-closing");
-      els.ytHost.classList.toggle("is-position-restored", Boolean(position));
-      els.ytHost.classList.toggle("is-mobile-open", Boolean(position));
+      host.classList.remove("is-closing");
+      // Always let the JS-controlled --yt-left / --yt-top position win (also in the
+      // minimal view), otherwise the minimal-view CSS pins the video and it cannot move.
+      host.classList.add("is-position-restored", "is-mobile-open");
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
 
-      // Mobile: position through --yt-left / --yt-top so dragging stays smooth.
-      // Reuse the last dragged position; centre the player the first time.
-      if (isMobile) {
-        const rect = els.ytHost.getBoundingClientRect();
-        const lastLeft = parseFloat(els.ytHost.style.getPropertyValue("--yt-left"));
-        const lastTop = parseFloat(els.ytHost.style.getPropertyValue("--yt-top"));
-
-        if (position) {
-          placeYtInstant(position.x, position.y);
-        } else if (Number.isFinite(lastLeft) && Number.isFinite(lastTop)) {
-          placeYtInstant(lastLeft, lastTop);
-        } else {
-          placeYtInstant(
-            (window.innerWidth - rect.width) / 2,
-            (window.innerHeight - rect.height) / 2
-          );
-        }
+      // Position: explicit > last dragged position > default
+      const rect = host.getBoundingClientRect();
+      const lastLeft = parseFloat(host.style.getPropertyValue("--yt-left"));
+      const lastTop = parseFloat(host.style.getPropertyValue("--yt-top"));
+      const hasLast = Number.isFinite(lastLeft) && Number.isFinite(lastTop);
+      let x;
+      let y;
+      if (position) {
+        x = position.x;
+        y = position.y;
+      } else if (hasLast) {
+        x = lastLeft;
+        y = lastTop;
+      } else if (isMobile) {
+        x = (window.innerWidth - rect.width) / 2;
+        y = (window.innerHeight - rect.height) / 2;
+      } else {
+        x = window.innerWidth - rect.width - 16;
+        y = 5.6 * 16;
       }
-      
-      els.ytHost.classList.add("is-opening");
+      setYtPosition(x, y, true);
+      void host.offsetWidth; // flush so the jump is not animated
+      host.style.transition = prevTransition;
+
+      host.classList.add("is-opening");
       requestAnimationFrame(() => {
-        if (position && !isMobile) {
-          setYtPosition(position.x, position.y, true);
-        } else if (!position && !isMobile) {
+        if (!position && !hasLast && !isMobile) {
           snapYtToNearestEdge();
         }
-        requestAnimationFrame(() => els.ytHost.classList.remove("is-opening"));
+        requestAnimationFrame(() => host.classList.remove("is-opening"));
       });
     }
 
@@ -2048,15 +2068,15 @@
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
     els.screenClose.addEventListener("click", minimizeInterface);
     els.mobileShowVideo.addEventListener("click", () => {
-      if (ytPlayerClosed) openYoutubeWindow(ytPositionBeforeMinimal);
+      if (ytPlayerClosed) openYoutubeWindow();
     });
     els.screenOpen.addEventListener("click", () => {
-      if (ytPlayerClosed) openYoutubeWindow(ytPositionBeforeMinimal);
+      if (ytPlayerClosed) openYoutubeWindow();
     });
     els.screenAll.addEventListener("click", () => {
       restoreInterface();
-      if (ytWasOpenBeforeMinimal) {
-        openYoutubeWindow(ytPositionBeforeMinimal);
+      if (ytWasOpenBeforeMinimal && ytPlayerClosed) {
+        openYoutubeWindow();
       }
       ytWasOpenBeforeMinimal = null;
       ytPositionBeforeMinimal = null;
