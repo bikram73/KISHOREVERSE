@@ -619,53 +619,13 @@
       }
     }
 
-    .mobile-video-arrow {
+    .mobile-show-video {
       display: none;
-      position: fixed;
-      top: 50%;
-      z-index: 52;
-      width: 26px;
-      height: 48px;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(95, 190, 255, .8);
-      color: #54baff;
-      background: rgba(5, 34, 72, .8);
-      box-shadow: 0 0 12px rgba(45, 160, 255, .55), inset 0 0 8px rgba(65, 170, 255, .16);
-      cursor: pointer;
-      font: inherit;
-      font-size: 22px;
-      line-height: 1;
-      transform: translateY(-50%);
-      animation: mobileArrowGlow 2.2s ease-in-out infinite;
     }
 
-    .mobile-video-arrow.is-left {
-      left: max(.25rem, env(safe-area-inset-left));
-      border-radius: 0 9px 9px 0;
-    }
-
-    .mobile-video-arrow.is-right {
-      right: max(.25rem, env(safe-area-inset-right));
-      border-radius: 9px 0 0 9px;
-    }
-
-    .mobile-video-arrow::before {
-      display: block;
-      animation: mobileArrowDrift 1.4s ease-in-out infinite;
-    }
-
-    .mobile-video-arrow.is-left::before { content: "›"; }
-    .mobile-video-arrow.is-right::before { content: "‹"; }
-
-    @keyframes mobileArrowGlow {
-      0%, 100% { opacity: .68; box-shadow: 0 0 8px rgba(45, 160, 255, .35), inset 0 0 7px rgba(65, 170, 255, .12); }
-      50% { opacity: 1; box-shadow: 0 0 17px rgba(45, 175, 255, .75), inset 0 0 11px rgba(65, 190, 255, .24); }
-    }
-
-    @keyframes mobileArrowDrift {
-      0%, 100% { transform: translateX(0); }
-      50% { transform: translateX(3px); }
+    /* Hide mobile video arrow permanently */
+    .mobile-video-arrow {
+      display: none !important;
     }
 
     .screen-close,
@@ -798,6 +758,125 @@
     @media (max-width: 760px) {
       .screen-open.is-video-closed { display: none !important; }
 
+      /* Make mobile video button same size as Load Hindi button */
+      .mobile-show-video {
+        display: inline-block;
+        width: auto; /* Auto width like other buttons */
+        margin-bottom: 0.45rem; /* Space below the button */
+      }
+
+      .mobile-show-video.is-video-closed {
+        animation: showVideoGlow 1.4s ease-in-out infinite;
+      }
+
+      /* Hide mobile video button when video is open */
+      .mobile-show-video.is-video-open {
+        display: none;
+      }
+
+      /* Hide iframe video by default on mobile - must be more specific */
+      body #yt-host {
+        display: none !important;
+      }
+
+      /* Only show iframe when explicitly opened */
+      body #yt-host.mobile-video-open {
+        display: block !important;
+      }
+
+      /* Override any existing positioning for mobile - allow full movement */
+      #yt-host {
+        width: min(320px, calc(100vw - 1.5rem)) !important;
+        height: min(180px, calc((100vw - 1.5rem) * .5625)) !important;
+        /* Remove fixed positioning constraints */
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        display: none !important;
+        /* Ensure dragging works smoothly on mobile */
+        position: fixed !important;
+        touch-action: none !important;
+        -webkit-transform: translate3d(0,0,0); /* Hardware acceleration */
+        transform: translate3d(0,0,0);
+        will-change: left, top, transform;
+      }
+
+      /* When video is opened, set initial position but allow dragging everywhere */
+      #yt-host.mobile-video-open {
+        display: block !important;
+        /* Initial position - but this can be overridden by dragging */
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        right: auto !important;
+        bottom: auto !important;
+      }
+
+      /* During drag, remove any positioning constraints */
+      #yt-host.is-dragging {
+        cursor: grabbing !important;
+        z-index: 9999 !important;
+        pointer-events: auto !important;
+        transition: none !important;
+        /* Allow free positioning during drag */
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
+        -webkit-transform: translate3d(0,0,0);
+      }
+
+      /* Ensure drag handle is large and responsive on mobile */
+      #yt-host .yt-drag-handle {
+        display: block !important;
+        cursor: grab;
+        touch-action: none !important;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        height: 50px !important; /* Even larger touch target */
+        background: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.4));
+        border-radius: 16px 16px 0 0;
+        z-index: 10;
+      }
+
+      /* Smooth dragging state on mobile */
+      #yt-host.is-dragging {
+        cursor: grabbing !important;
+        z-index: 9999 !important;
+        pointer-events: auto !important;
+        transition: none !important; /* Remove all transitions during drag */
+        -webkit-transform: translate3d(0,0,0); /* Maintain hardware acceleration */
+        transform: translate3d(0,0,0);
+      }
+
+      /* Prevent any body scrolling during drag */
+      body.dragging-video {
+        overflow: hidden;
+        touch-action: none;
+      }
+
+      /* Make sure image bar is flex column on mobile to put Show Video above other buttons */
+      .image-bar {
+        flex-direction: column;
+        align-items: center; /* Center align everything */
+      }
+
+      .image-bar > div {
+        display: flex;
+        gap: 0.45rem;
+        justify-content: stretch; /* Stretch buttons to fill space */
+        width: 100%; /* Use full width */
+      }
+
+      /* Make buttons wider on mobile to match the image */
+      .image-bar > div .bar-btn {
+        flex: 1; /* Each button takes equal space */
+        text-align: center;
+      }
+
       .github-link {
         right: max(.75rem, env(safe-area-inset-right));
         bottom: max(.75rem, env(safe-area-inset-bottom));
@@ -817,7 +896,7 @@
         white-space: nowrap;
       }
 
-      .mobile-video-arrow.is-video-closed { display: flex; }
+      .mobile-video-arrow.is-video-closed { display: none !important; }
 
       #yt-host {
         width: min(320px, calc(100vw - 1.5rem)) !important;
@@ -978,13 +1057,16 @@
 
     <div class="player-dock">
       <div class="image-bar">
-        <label class="bar-btn">
-          Change image
-          <input id="bgInput" type="file" accept="image/*" />
-        </label>
-        <button class="bar-btn" id="loadHindi" type="button">Load Hindi</button>
-        <button class="bar-btn" id="loadBengali" type="button">Load Bengali</button>
-        <button class="bar-btn ghost" id="resetBg" type="button" hidden>Reset image</button>
+        <button class="bar-btn mobile-show-video is-video-closed" id="mobileShowVideo" type="button">Show Video</button>
+        <div>
+          <label class="bar-btn">
+            Change image
+            <input id="bgInput" type="file" accept="image/*" />
+          </label>
+          <button class="bar-btn" id="loadHindi" type="button">Load Hindi</button>
+          <button class="bar-btn" id="loadBengali" type="button">Load Bengali</button>
+          <button class="bar-btn ghost" id="resetBg" type="button" hidden>Reset image</button>
+        </div>
       </div>
 
       <form class="playlist-bar glass" id="playlistForm" autocomplete="off">
@@ -1087,6 +1169,7 @@
       screenAll: $("screenAll"),
       screenAllThumb: $("screenAllThumb"),
       mobileVideoArrow: $("mobileVideoArrow"),
+      mobileShowVideo: $("mobileShowVideo"),
     };
 
     let player = null;
@@ -1130,10 +1213,8 @@
     }
 
     function updateMobileVideoArrow() {
-      const rect = els.ytHost.getBoundingClientRect();
-      const onLeft = rect.left + rect.width / 2 < window.innerWidth / 2;
-      els.mobileVideoArrow.classList.toggle("is-left", onLeft);
-      els.mobileVideoArrow.classList.toggle("is-right", !onLeft);
+      // Mobile arrow is now permanently hidden, no updates needed
+      return;
     }
 
     function snapYtToNearestEdge() {
@@ -1157,17 +1238,76 @@
       setYtPosition(targetX, targetY, true);
     }
 
+    // Mobile-specific drag variables
+    let mobileDragState = null;
+
+    // Enhanced mobile drag functions
+    function startMobileDrag(clientX, clientY) {
+      const rect = els.ytHost.getBoundingClientRect();
+      mobileDragState = {
+        startX: clientX,
+        startY: clientY,
+        offsetX: clientX - rect.left,
+        offsetY: clientY - rect.top,
+        initialLeft: rect.left,
+        initialTop: rect.top
+      };
+      els.ytHost.classList.add("is-dragging");
+      document.body.classList.add("dragging-video");
+      els.ytHost.style.transition = "none";
+    }
+
+    function moveMobileDrag(clientX, clientY) {
+      if (!mobileDragState) return;
+      
+      const newX = clientX - mobileDragState.offsetX;
+      const newY = clientY - mobileDragState.offsetY;
+      
+      // Constrain to viewport bounds
+      const margin = 10;
+      const maxX = Math.max(margin, window.innerWidth - els.ytHost.offsetWidth - margin);
+      const maxY = Math.max(margin, window.innerHeight - els.ytHost.offsetHeight - margin);
+      const constrainedX = Math.min(maxX, Math.max(margin, newX));
+      const constrainedY = Math.min(maxY, Math.max(margin, newY));
+      
+      // Apply position immediately for smooth dragging
+      els.ytHost.style.left = `${constrainedX}px`;
+      els.ytHost.style.top = `${constrainedY}px`;
+      els.ytHost.style.right = "auto";
+      els.ytHost.style.bottom = "auto";
+    }
+
+    function endMobileDrag() {
+      if (!mobileDragState) return;
+      
+      mobileDragState = null;
+      els.ytHost.classList.remove("is-dragging");
+      document.body.classList.remove("dragging-video");
+      els.ytHost.style.transition = "";
+      
+      // Snap to nearest edge after drag
+      snapYtToNearestEdge();
+    }
+
     function startYtDrag(e) {
       if (e.button !== undefined && e.button !== 0) return;
       const rect = els.ytHost.getBoundingClientRect();
-      ytDrag = { pointerId: e.pointerId, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
+      ytDrag = { pointerId: e.pointerId || 1, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
       els.ytHost.classList.add("is-dragging");
-      els.ytDragHandle.setPointerCapture?.(e.pointerId);
+      
+      // Try to set pointer capture, but don't fail if not supported
+      try {
+        els.ytDragHandle.setPointerCapture?.(e.pointerId || 1);
+      } catch (err) {
+        // Ignore capture errors on mobile
+      }
+      
       e.preventDefault();
+      e.stopPropagation();
     }
 
     function moveYtDrag(e) {
-      if (!ytDrag || e.pointerId !== ytDrag.pointerId) return;
+      if (!ytDrag || (e.pointerId !== undefined && e.pointerId !== ytDrag.pointerId)) return;
       ytPendingPosition = { x: e.clientX - ytDrag.offsetX, y: e.clientY - ytDrag.offsetY };
       if (!ytMoveFrame) {
         ytMoveFrame = requestAnimationFrame(() => {
@@ -1177,10 +1317,11 @@
         });
       }
       e.preventDefault();
+      e.stopPropagation();
     }
 
     function endYtDrag(e) {
-      if (!ytDrag || e.pointerId !== ytDrag.pointerId) return;
+      if (!ytDrag || (e.pointerId !== undefined && e.pointerId !== ytDrag.pointerId)) return;
       ytDrag = null;
       if (ytMoveFrame) cancelAnimationFrame(ytMoveFrame);
       if (ytPendingPosition) setYtPosition(ytPendingPosition.x, ytPendingPosition.y, false);
@@ -1212,10 +1353,18 @@
       if (ytPlayerClosed) return;
       ytPlayerClosed = true;
       els.ytHost.classList.add("is-closing");
+      els.ytHost.classList.remove("mobile-video-open"); // Remove mobile video open class
       els.screenOpen.classList.add("is-video-closed");
       els.screenOpen.textContent = "▶ Show video";
+      
+      // Show the mobile video button again on mobile
+      if (window.innerWidth <= 760) {
+        els.mobileShowVideo.classList.remove("is-video-open");
+        els.mobileShowVideo.classList.add("is-video-closed");
+        els.mobileShowVideo.textContent = "Show Video";
+      }
+      
       updateMobileVideoArrow();
-      els.mobileVideoArrow.classList.add("is-video-closed");
       setTimeout(() => {
         if (!ytPlayerClosed) return;
         els.ytHost.style.display = "none";
@@ -1224,6 +1373,25 @@
     }
 
     function openYoutubeWindow(position = null) {
+      // On mobile, add special class to show the video
+      if (window.innerWidth <= 760) {
+        els.ytHost.classList.add("mobile-video-open");
+        // Hide the show video button on mobile
+        els.mobileShowVideo.classList.remove("is-video-closed");
+        els.mobileShowVideo.classList.add("is-video-open");
+        
+        // Set initial position for mobile if no position specified
+        if (!position) {
+          const centerX = window.innerWidth / 2 - 160; // Half of video width
+          const centerY = window.innerHeight / 2 - 90;  // Half of video height
+          els.ytHost.style.left = `${centerX}px`;
+          els.ytHost.style.top = `${centerY}px`;
+          els.ytHost.style.right = "auto";
+          els.ytHost.style.bottom = "auto";
+          els.ytHost.style.transform = "none";
+        }
+      }
+      
       els.ytHost.style.display = "block";
       ytPlayerClosed = false;
       els.ytHost.classList.remove("is-closing");
@@ -1231,11 +1399,14 @@
       els.ytHost.classList.toggle("is-mobile-open", Boolean(position));
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
-      els.mobileVideoArrow.classList.remove("is-video-closed");
+      
       els.ytHost.classList.add("is-opening");
       requestAnimationFrame(() => {
-        if (position) setYtPosition(position.x, position.y, true);
-        else snapYtToNearestEdge();
+        if (position && window.innerWidth > 760) {
+          setYtPosition(position.x, position.y, true);
+        } else if (!position && window.innerWidth > 760) {
+          snapYtToNearestEdge();
+        }
         requestAnimationFrame(() => els.ytHost.classList.remove("is-opening"));
       });
     }
@@ -1827,14 +1998,51 @@
       setProgress(next, duration);
     });
 
+    // Desktop pointer events
     els.ytDragHandle.addEventListener("pointerdown", startYtDrag);
     els.ytDragHandle.addEventListener("pointermove", moveYtDrag);
     els.ytDragHandle.addEventListener("pointerup", endYtDrag);
     els.ytDragHandle.addEventListener("pointercancel", endYtDrag);
 
+    // Mobile touch events - direct and simple approach
+    els.ytDragHandle.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      startMobileDrag(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    // Listen on document for better tracking
+    document.addEventListener("touchmove", (e) => {
+      if (mobileDragState) {
+        e.preventDefault();
+        e.stopPropagation();
+        const touch = e.touches[0];
+        moveMobileDrag(touch.clientX, touch.clientY);
+      }
+    }, { passive: false });
+
+    document.addEventListener("touchend", (e) => {
+      if (mobileDragState) {
+        e.preventDefault();
+        e.stopPropagation();
+        endMobileDrag();
+      }
+    }, { passive: false });
+
+    document.addEventListener("touchcancel", (e) => {
+      if (mobileDragState) {
+        e.preventDefault();
+        e.stopPropagation();
+        endMobileDrag();
+      }
+    }, { passive: false });
+
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
     els.screenClose.addEventListener("click", minimizeInterface);
-    els.mobileVideoArrow.addEventListener("click", () => openYoutubeWindow(ytPositionBeforeMinimal));
+    els.mobileShowVideo.addEventListener("click", () => {
+      if (ytPlayerClosed) openYoutubeWindow(ytPositionBeforeMinimal);
+    });
     els.screenOpen.addEventListener("click", () => {
       if (ytPlayerClosed) openYoutubeWindow(ytPositionBeforeMinimal);
     });
@@ -1851,9 +2059,24 @@
       if (els.ytHost.style.display !== "none") snapYtToNearestEdge();
     });
 
+    // Ensure video is hidden by default on mobile
+    function initializeMobileVideo() {
+      if (window.innerWidth <= 760) {
+        ytPlayerClosed = true;
+        els.ytHost.style.display = "none";
+        els.ytHost.classList.remove("mobile-video-open");
+        if (els.mobileShowVideo) {
+          els.mobileShowVideo.classList.add("is-video-closed");
+          els.mobileShowVideo.classList.remove("is-video-open");
+          els.mobileShowVideo.textContent = "Show Video";
+        }
+      }
+    }
+
     restoreCustomBackground();
     updateClock();
     setInterval(updateClock, 15000);
+    initializeMobileVideo(); // Initialize mobile video state
 
     window.onYouTubeIframeAPIReady = createPlayer;
     const tag = document.createElement("script");
