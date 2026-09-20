@@ -491,6 +491,7 @@
       background: linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,0));
       border-radius: 16px 0 0 0;
       touch-action: none;
+      animation: dragHandlePulse 1.6s ease-in-out infinite;
     }
 
     .yt-drag-handle::before {
@@ -504,6 +505,17 @@
       letter-spacing: .04em;
       text-shadow: 0 1px 3px #000;
       pointer-events: none;
+      animation: dragLabelPulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes dragHandlePulse {
+      0%, 100% { box-shadow: inset 0 2px 8px rgba(36, 152, 255, .12); }
+      50% { box-shadow: inset 0 2px 14px rgba(36, 152, 255, .62), 0 0 12px rgba(36, 152, 255, .45); }
+    }
+
+    @keyframes dragLabelPulse {
+      0%, 100% { color: rgba(255,255,255,.86); text-shadow: 0 1px 3px #000; }
+      50% { color: #9edfff; text-shadow: 0 0 8px rgba(36, 152, 255, .95); }
     }
 
     .yt-window-close {
@@ -940,6 +952,8 @@
       .art.is-spinning { animation: none; }
       .screen-all.is-playing img { animation: none; }
       .screen-open.is-video-closed { animation: none; }
+      .yt-drag-handle,
+      .yt-drag-handle::before { animation: none; }
       .brand { animation: none; opacity: 1; transform: translate(-50%, 0); }
       .brand::after { animation: none; }
     }
