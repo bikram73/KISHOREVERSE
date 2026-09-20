@@ -5,11 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>KISHOREVERSE · Kishore Kumar Music</title>
+  <!-- Responsive Favicons for All Devices -->
   <link rel="icon" type="image/png" href="./assets/Kishore_Kumar_tab.png" />
   <link rel="shortcut icon" type="image/png" href="./assets/Kishore_Kumar_tab.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="./assets/Kishore_Kumar_tab.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="./assets/Kishore_Kumar_tab.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/Kishore_Kumar_tab.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/Kishore_Kumar_tab.png" />
+  
+  <!-- Apple Touch Icons for iOS Safari -->
   <link rel="apple-touch-icon" href="./assets/Kishore_Kumar_tab.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/Kishore_Kumar_tab.png" />
+  
+  <!-- Android Chrome Icons -->
+  <link rel="icon" type="image/png" sizes="512x512" href="./assets/Kishore_Kumar_tab.png" />
+  
+  <!-- Microsoft Tiles -->
+  <meta name="msapplication-TileImage" content="./assets/Kishore_Kumar_tab.png" />
+  <meta name="msapplication-TileColor" content="#0b100e" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -1277,6 +1289,44 @@
     const INTRO_AUDIO_SRC = "./assets/Kishore_Kumar.mp3";
 
     const $ = (id) => document.getElementById(id);
+
+    // Responsive Favicon Management
+    function updateResponsiveFavicon() {
+      const width = window.innerWidth;
+      let faviconPath;
+      
+      // Determine favicon based on device/screen size
+      if (width <= 760) {
+        // Mobile
+        faviconPath = './assets/Kishore_Kumar_mobile.png';
+      } else if (width >= 761 && width <= 1024) {
+        // Tablet
+        faviconPath = './assets/Kishore_Kumar_tab.png';
+      } else {
+        // Desktop
+        faviconPath = './assets/Kishore_Kumar.png';
+      }
+      
+      // Update all favicon links
+      const faviconLinks = document.querySelectorAll('link[rel*="icon"]');
+      faviconLinks.forEach(link => {
+        if (link.rel.includes('icon')) {
+          link.href = faviconPath;
+        }
+      });
+      
+      // Update apple-touch-icon
+      const appleTouchIcons = document.querySelectorAll('link[rel="apple-touch-icon"]');
+      appleTouchIcons.forEach(link => {
+        link.href = faviconPath;
+      });
+      
+      // Update Microsoft tile
+      const tileImage = document.querySelector('meta[name="msapplication-TileImage"]');
+      if (tileImage) {
+        tileImage.content = faviconPath;
+      }
+    }
     const els = {
       clock: $("clock"),
       title: $("title"),
@@ -2520,6 +2570,22 @@
     initializeMobileVideo(); // Initialize mobile video state
     updateSpeakerState();
     requestAnimationFrame(positionResetButton);
+    
+    // Initialize responsive favicon
+    updateResponsiveFavicon();
+    
+    // Update favicon on resize with debouncing
+    let faviconResizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(faviconResizeTimeout);
+      faviconResizeTimeout = setTimeout(updateResponsiveFavicon, 100);
+    });
+    
+    // Update favicon on orientation change (mobile/tablet)
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateResponsiveFavicon, 200);
+    });
+    
     if (isPageReload()) startReloadPlay(); // on refresh: play Kishore_Kumar.mp3, then autoplay the Hindi default playlist
 
     window.onYouTubeIframeAPIReady = createPlayer;
