@@ -43,7 +43,9 @@ The project is preconfigured to play the Hindi playlist:
 
 **Kishore Kumar — Hindi & Bengali Songs**
 
-👉 [Open the Kishore Kumar YouTube Playlist](https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV)
+The Hindi playlist is also available from the top-right **Hindi** link:
+
+👉 [Open the Kishore Kumar Hindi Playlist](https://www.youtube.com/playlist?list=PLUhKXbPpN0vEc-btqPyLsgZN8sIj-6UHV)
 
 The playlist ID is:
 
