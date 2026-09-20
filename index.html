@@ -773,6 +773,16 @@
       height: min(202px, calc((100vw - 1.5rem) * .5625)) !important;
     }
 
+    body.is-minimal #yt-host.is-position-restored {
+      left: var(--yt-left) !important;
+      top: var(--yt-top) !important;
+      right: auto !important;
+      bottom: auto !important;
+      transform: none !important;
+      width: 320px !important;
+      height: 180px !important;
+    }
+
     @media (max-width: 760px) {
       .screen-open.is-video-closed { display: none !important; }
 
@@ -811,11 +821,13 @@
       }
 
       body.is-minimal #yt-host.is-mobile-open {
-        left: auto !important;
+        left: var(--yt-left) !important;
+        top: var(--yt-top) !important;
         right: auto !important;
-        top: auto !important;
         bottom: auto !important;
         transform: none !important;
+        width: calc(100vw - 1rem) !important;
+        height: calc((100vw - 1rem) * .5625) !important;
       }
     }
 
@@ -1097,6 +1109,8 @@
       if (!smooth) els.ytHost.classList.add("is-dragging");
       els.ytHost.style.left = `${nx}px`;
       els.ytHost.style.top = `${ny}px`;
+      els.ytHost.style.setProperty("--yt-left", `${nx}px`);
+      els.ytHost.style.setProperty("--yt-top", `${ny}px`);
       els.ytHost.style.right = "auto";
       els.ytHost.style.bottom = "auto";
     }
@@ -1199,6 +1213,7 @@
       els.ytHost.style.display = "block";
       ytPlayerClosed = false;
       els.ytHost.classList.remove("is-closing");
+      els.ytHost.classList.toggle("is-position-restored", Boolean(position));
       els.ytHost.classList.toggle("is-mobile-open", Boolean(position));
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
@@ -1807,7 +1822,7 @@
     els.screenClose.addEventListener("click", minimizeInterface);
     els.mobileVideoArrow.addEventListener("click", () => openYoutubeWindow(ytPositionBeforeMinimal));
     els.screenOpen.addEventListener("click", () => {
-      if (ytPlayerClosed) openYoutubeWindow();
+      if (ytPlayerClosed) openYoutubeWindow(ytPositionBeforeMinimal);
     });
     els.screenAll.addEventListener("click", () => {
       restoreInterface();
