@@ -874,6 +874,17 @@
          - above "Load Bengali": the speaker button — always shown.
          When the video is open, both floating buttons are hidden so
          nothing overlaps the video area. */
+      /* Mobile alignment fixes for floating buttons */
+      .change-wrap #resetBg {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 0.4rem);
+        transform: translateX(-50%);
+        flex: none;
+        white-space: nowrap;
+      }
+
+      /* Ensure all floating buttons are properly centered above their parent buttons */
       .tab-show-video.is-video-closed {
         display: inline-block;
         position: absolute;
@@ -885,12 +896,42 @@
 
       .tab-show-video.is-video-closed:active { transform: translateX(-50%) scale(0.97); }
 
-      .change-wrap #resetBg {
-        position: absolute;
-        left: 0;
+      .speaker-btn {
         bottom: calc(100% + 0.4rem);
-        flex: none;
-        white-space: nowrap;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 28px;
+      }
+
+      /* Adjust image-bar layout for better mobile alignment */
+      .image-bar {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .image-bar > div {
+        display: flex;
+        gap: 0.45rem;
+        justify-content: center;
+        width: 100%;
+        align-items: center;
+      }
+
+      /* Make buttons consistent width and properly aligned */
+      .image-bar > div .bar-btn {
+        flex: 1;
+        text-align: center;
+        min-width: 0;
+      }
+
+      .image-bar > div .hindi-wrap,
+      .image-bar > div .bengali-wrap,
+      .image-bar > div .change-wrap {
+        flex: 1;
+        display: flex;
+        justify-content: center;
       }
 
       /* Hide both floating buttons while the video is open. */
@@ -979,34 +1020,40 @@
         touch-action: none;
       }
 
-      /* Make sure image bar is flex column on mobile to put Show Video above other buttons */
+      /* Make sure image bar is properly aligned on mobile */
       .image-bar {
         flex-direction: column;
-        align-items: center; /* Center align everything */
+        align-items: center;
+        gap: 0.4rem;
       }
 
       .image-bar > div {
         display: flex;
         gap: 0.45rem;
-        justify-content: stretch; /* Stretch buttons to fill space */
-        width: 100%; /* Use full width */
+        justify-content: center;
+        width: 100%;
+        align-items: center;
       }
 
-      /* Make buttons wider on mobile to match the image */
+      /* Make buttons consistent width and properly aligned */
       .image-bar > div .bar-btn {
-        flex: 1; /* Each button takes equal space */
+        flex: 1;
         text-align: center;
+        min-width: 0;
       }
 
       .image-bar > div .hindi-wrap,
       .image-bar > div .bengali-wrap {
-        flex: 1; /* Keep Load Hindi / Load Bengali the same width */
+        flex: 1;
+        display: flex;
+        justify-content: center;
       }
 
-      /* Line the speaker up with the "Show Video" button: that button is lifted by
-         the image-bar gap (.45rem) plus its own bottom margin (.45rem). */
+      /* Ensure proper spacing and alignment for floating buttons */
       .speaker-btn {
-        bottom: calc(100% + 0.9rem);
+        bottom: calc(100% + 0.4rem);
+        left: 50%;
+        transform: translateX(-50%);
         width: 28px;
         height: 28px;
       }
