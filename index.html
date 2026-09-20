@@ -4,6 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="KISHOREVERSE - Experience the timeless music of Kishore Kumar with our interactive music player. Listen to Hindi and Bengali classics with YouTube integration." />
+  <meta name="keywords" content="Kishore Kumar, Hindi music, Bengali music, classic songs, music player, YouTube music" />
+  <meta name="author" content="KISHOREVERSE" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="KISHOREVERSE · Kishore Kumar Music" />
+  <meta property="og:description" content="Experience the timeless music of Kishore Kumar with our interactive music player" />
+  <meta property="og:image" content="/assets/Kishore_Kumar_16x9.png" />
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content="KISHOREVERSE · Kishore Kumar Music" />
+  <meta property="twitter:description" content="Experience the timeless music of Kishore Kumar with our interactive music player" />
+  <meta property="twitter:image" content="/assets/Kishore_Kumar_16x9.png" />
+  
   <title>KISHOREVERSE · Kishore Kumar Music</title>
   <!-- Responsive Favicons for All Devices -->
   <link rel="icon" type="image/png" href="./assets/Kishore_Kumar_tab.png" />
@@ -22,6 +40,16 @@
   <!-- Microsoft Tiles -->
   <meta name="msapplication-TileImage" content="./assets/Kishore_Kumar_tab.png" />
   <meta name="msapplication-TileColor" content="#0b100e" />
+  
+  <!-- Preload critical resources for Netlify -->
+  <link rel="preload" href="./assets/Kishore_Kumar.png" as="image" importance="high" />
+  <link rel="preload" href="./assets/Kishore_Kumar_mobile.png" as="image" />
+  <link rel="preload" href="./assets/Kishore_Kumar_tab.png" as="image" />
+  <link rel="preload" href="https://www.youtube.com/iframe_api" as="script" />
+  
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -2639,6 +2667,19 @@
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
+
+    // Register service worker for Netlify deployment
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
   </script>
 </body>
 </html>
