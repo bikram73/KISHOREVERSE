@@ -251,21 +251,4 @@ Built as a static web project with ❤️, 🎶 and a little vintage cinema magi
 
 ## 📜 License
 
-The application code can be reused and modified for learning and personal projects. The supplied Kishore Kumar artwork and third-party YouTube content should **not** be assumed to be covered by the same license as the code. Respect the rights of the original artists, publishers, and content owners.
-
-
-## 🚀 Deployment Playback Note
-
-KISHOREVERSE keeps the YouTube IFrame player **visible** instead of making it transparent/off-screen. This is intentional: YouTube playback can behave differently on deployed origins when the embedded player is hidden, particularly when YouTube serves a pre-roll. The player is 320×180 on desktop and responsive on mobile.
-
-The app now:
-- uses `https://www.youtube.com` for the IFrame host;
-- sends the deployed page origin to YouTube when the page is served over HTTP(S);
-- cues playlists first instead of forcing autoplay during playlist loading;
-- starts playback from the visible **Play** button (a direct user gesture);
-- retains playlist error recovery for unavailable/non-embeddable items;
-- does **not** attempt to remove or bypass YouTube advertisements.
-
-### If GitHub Pages still shows a YouTube ad
-
-That ad is controlled by YouTube. Let the ad finish or use the visible YouTube player controls. The application cannot legally or technically suppress YouTube-served ads in an embedded player.
+This project is licensed under the **MIT License** — see the full license text in the [LICENSE](./LICENSE) file.
