@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>KISHOREVERSE · Kishore Kumar Music</title>
-  <link rel="icon" type="image/png" href="./assets/Kishore_Kumar.png" />
+  <link rel="icon" type="image/png" href="./assets/Kishore_Kumar_tab.png" />
   <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1238,10 +1238,15 @@
     const BG_DB = "kishoreverse-bg";
     const BG_STORE = "background";
     const MAX_BG_EDGE = 1920;
-    // Tried in order; the first file the browser can play is used
+    // Tried in order; the first file the browser can play is used.
+    // This is the clickable speaker's audio — unchanged.
     const KISHORE_AUDIO_SOURCES = [
       "./assets/Kishore_Kumar.mp4",
       "./assets/Kishooore_Kumar.mp3",
+    ];
+    // Plays once on page refresh, before the Hindi default playlist autoplays.
+    const RELOAD_INTRO_AUDIO_SOURCES = [
+      "./assets/Kishore_Kumar.mp3",
     ];
 
     const $ = (id) => document.getElementById(id);
@@ -1285,6 +1290,7 @@
     let seeking = false;
     let currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
     let pendingSource = null;
+    let pendingAutoplay = false;
     let customBgUrl = null;
     // Playlist recovery state. YouTube can return 100/101/150 for individual
     // playlist items. We remember the failed index and move to the next item
@@ -1302,6 +1308,7 @@
     // Kishore Kumar mp3 (speaker button + play-on-refresh)
     let ytIsPlaying = false;
     let kishoreAudio = null;
+    let reloadAudio = null;
     let reloadPlayPending = false;
 
     function clamp(value, min, max) {
@@ -1693,9 +1700,13 @@
       return Boolean(kishoreAudio && !kishoreAudio.paused && !kishoreAudio.ended);
     }
 
+    function isReloadAudioPlaying() {
+      return Boolean(reloadAudio && !reloadAudio.paused && !reloadAudio.ended);
+    }
+
     // The speaker is enabled only when no music is playing at all
     function updateSpeakerState() {
-      const audioOn = isKishoreAudioPlaying();
+      const audioOn = isKishoreAudioPlaying() || isReloadAudioPlaying();
       const busy = ytIsPlaying || audioOn;
       els.speakerBtn.disabled = busy;
       els.speakerBtn.classList.toggle("is-playing", audioOn);
@@ -1726,6 +1737,28 @@
       return kishoreAudio;
     }
 
+    // Separate element for the refresh intro, so the speaker button's own
+    // audio (KISHORE_AUDIO_SOURCES) is never touched.
+    function getReloadAudio() {
+      if (!reloadAudio) {
+        reloadAudio = document.createElement("audio");
+        reloadAudio.preload = "auto";
+        reloadAudio.setAttribute("playsinline", "");
+        RELOAD_INTRO_AUDIO_SOURCES.forEach((src) => {
+          const source = document.createElement("source");
+          source.src = src;
+          reloadAudio.appendChild(source);
+        });
+        reloadAudio.load();
+        ["play", "playing", "pause", "ended", "error"].forEach((evt) =>
+          reloadAudio.addEventListener(evt, updateSpeakerState)
+        );
+        // Once the refresh intro finishes, autoplay the Hindi default playlist.
+        reloadAudio.addEventListener("ended", autoplayHindiAfterIntro);
+      }
+      return reloadAudio;
+    }
+
     function removeReloadGestureListeners() {
       RELOAD_GESTURE_EVENTS.forEach((evt) =>
         document.removeEventListener(evt, onReloadGesture, true)
@@ -1737,12 +1770,21 @@
       removeReloadGestureListeners();
     }
 
-    // Stop the mp3 (used when a YouTube song starts)
+    // Stop the speaker's mp3 (used when a YouTube song starts)
     function stopKishoreAudio() {
       cancelReloadPlay();
       if (!kishoreAudio) return;
       kishoreAudio.pause();
       try { kishoreAudio.currentTime = 0; } catch { /* ignore */ }
+      updateSpeakerState();
+    }
+
+    // Stop the refresh-intro mp3 (used when a YouTube song starts)
+    function stopReloadAudio() {
+      cancelReloadPlay();
+      if (!reloadAudio) return;
+      reloadAudio.pause();
+      try { reloadAudio.currentTime = 0; } catch { /* ignore */ }
       updateSpeakerState();
     }
 
@@ -1765,6 +1807,40 @@
       }
     }
 
+    function playReloadAudio() {
+      if (ytIsPlaying) return Promise.resolve(false);
+      const audio = getReloadAudio();
+      try {
+        const result = audio.play();
+        updateSpeakerState();
+        return Promise.resolve(result)
+          .then(() => true)
+          .catch((err) => {
+            console.warn("Reload intro audio did not start:", err?.name || err);
+            updateSpeakerState();
+            return false;
+          });
+      } catch {
+        updateSpeakerState();
+        return Promise.resolve(false);
+      }
+    }
+
+    // Called once the refresh-intro mp3 finishes playing: load and autoplay
+    // the Hindi default playlist.
+    function autoplayHindiAfterIntro() {
+      if (ytIsPlaying) return;
+      const source = { type: "playlist", id: DEFAULT_PLAYLIST };
+      els.input.value = DEFAULT_PLAYLIST_URL;
+      rememberSource(source, DEFAULT_PLAYLIST_URL);
+      if (!loadSource(source, { autoplay: true })) {
+        pendingSource = source;
+        pendingAutoplay = true;
+        els.title.textContent = "Loading playlist…";
+        els.artist.textContent = "Starting the YouTube player";
+      }
+    }
+
     // Browsers may block sound before the first tap/click. When that happens
     // after a refresh, the music starts on the visitor's first interaction.
     function onReloadGesture(e) {
@@ -1778,7 +1854,7 @@
       }
       // The visitor is choosing something else (YouTube controls / speaker)
       if (e.target?.closest?.(".player, .playlist-bar, #yt-host, #speakerBtn")) return;
-      playKishoreAudio().then((started) => {
+      playReloadAudio().then((started) => {
         if (started) cancelReloadPlay();
       });
     }
@@ -1793,7 +1869,7 @@
 
     function startReloadPlay() {
       reloadPlayPending = true;
-      playKishoreAudio().then((started) => {
+      playReloadAudio().then((started) => {
         if (started) {
           cancelReloadPlay();
         } else if (reloadPlayPending) {
@@ -1881,6 +1957,7 @@
       const nextIndex = (index + step + playlist.length) % playlist.length;
       wantPlay = true;
       stopKishoreAudio();
+      stopReloadAudio();
       player.playVideoAt(nextIndex);
       setTimeout(() => {
         if (wantPlay) tryPlay();
@@ -2020,6 +2097,7 @@
       if (!player || !ready) return;
       wantPlay = true;
       stopKishoreAudio(); // a YouTube song takes over from the mp3
+      stopReloadAudio();
       try {
         const state = player.getPlayerState();
         if (state === YT.PlayerState.CUED || state === YT.PlayerState.PAUSED || state === YT.PlayerState.UNSTARTED) {
@@ -2058,7 +2136,8 @@
           else player.cuePlaylist(source.id);
         }
         if (!autoplay) {
-          setTimeout(() => {
+          const loadToken = playlistLoadToken;
+          const settle = () => {
             if (playlistLength() > 0) {
               try {
                 player.playVideoAt(0);
@@ -2066,7 +2145,25 @@
                 refreshMeta();
                 els.artist.textContent = "Ready · press ▶ Play";
               } catch { /* YouTube still loading */ }
+              return true;
             }
+            return false;
+          };
+          setTimeout(() => {
+            if (loadToken !== playlistLoadToken) return;
+            if (settle()) return;
+            // YouTube's IFrame API can silently no-op the very first
+            // cuePlaylist() call right after a player becomes ready, leaving
+            // the playlist empty. Re-issue it once so the first click loads
+            // the playlist without needing a second click.
+            try {
+              player.cuePlaylist(payload);
+            } catch {
+              try { player.cuePlaylist(source.id); } catch { /* ignore */ }
+            }
+            setTimeout(() => {
+              if (loadToken === playlistLoadToken) settle();
+            }, 900);
           }, 900);
         }
         if (autoplay) {
@@ -2100,17 +2197,22 @@
       if (pendingSource?.id) {
         currentSource = pendingSource;
         pendingSource = null;
+        const autoplay = pendingAutoplay;
+        pendingAutoplay = false;
         els.input.value = currentSource.id === BENGALI_PLAYLIST
           ? BENGALI_PLAYLIST_URL
           : DEFAULT_PLAYLIST_URL;
+        // autoplay is true only when this pending load came from the
+        // refresh-intro finishing; otherwise it's a direct user click
+        // (Load Hindi/Bengali), so playback still waits for the Play button.
+        loadSource(currentSource, { autoplay });
       } else {
         currentSource = { type: "playlist", id: DEFAULT_PLAYLIST };
         els.input.value = DEFAULT_PLAYLIST_URL;
+        // Cue the default playlist without starting playback.
+        // Playback begins from the visible Play button, which is a direct user gesture.
+        loadSource(currentSource, { autoplay: false });
       }
-
-      // Cue the remembered/default playlist without starting playback.
-      // Playback begins from the visible Play button, which is a direct user gesture.
-      loadSource(currentSource, { autoplay: false });
       refreshMeta();
       tick();
     }
@@ -2121,7 +2223,10 @@
       if (event.data === PLAYING) {
         // A successful track means playlist recovery can start fresh.
         playlistFailedIndexes.clear();
-        if (wantPlay) stopKishoreAudio();
+        if (wantPlay) {
+          stopKishoreAudio();
+          stopReloadAudio();
+        }
         setPlaying(true);
         refreshMeta();
       } else if (event.data === PAUSED) {
@@ -2210,6 +2315,7 @@
       rememberSource(source, url);
       if (!loadSource(source, { autoplay })) {
         pendingSource = source;
+        pendingAutoplay = autoplay;
         els.title.textContent = "Loading playlist…";
         els.artist.textContent = "Starting the YouTube player";
       }
