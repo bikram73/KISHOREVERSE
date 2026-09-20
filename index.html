@@ -784,72 +784,68 @@
         display: block !important;
       }
 
-      /* Override any existing positioning for mobile - allow full movement */
+      /* ===== Mobile smooth-drag video player ===== */
+      /* Position is driven by --yt-left / --yt-top (set from JS while dragging),
+         so the !important rules below no longer block movement. */
       #yt-host {
         width: min(320px, calc(100vw - 1.5rem)) !important;
         height: min(180px, calc((100vw - 1.5rem) * .5625)) !important;
-        /* Remove fixed positioning constraints */
-        top: auto !important;
+
+        position: fixed !important;
+
+        left: var(--yt-left, 12px) !important;
+        top: var(--yt-top, 12px) !important;
+
         right: auto !important;
         bottom: auto !important;
-        left: auto !important;
-        display: none !important;
-        /* Ensure dragging works smoothly on mobile */
-        position: fixed !important;
+
+        transform: none !important;
+
         touch-action: none !important;
-        -webkit-transform: translate3d(0,0,0); /* Hardware acceleration */
-        transform: translate3d(0,0,0);
         will-change: left, top, transform;
       }
 
-      /* When video is opened, set initial position but allow dragging everywhere */
       #yt-host.mobile-video-open {
         display: block !important;
-        /* Initial position - but this can be overridden by dragging */
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
+        left: var(--yt-left, 12px) !important;
+        top: var(--yt-top, 12px) !important;
         right: auto !important;
         bottom: auto !important;
       }
 
-      /* During drag, remove any positioning constraints */
       #yt-host.is-dragging {
         cursor: grabbing !important;
         z-index: 9999 !important;
         pointer-events: auto !important;
         transition: none !important;
-        /* Allow free positioning during drag */
-        top: auto !important;
+
+        left: var(--yt-left, 12px) !important;
+        top: var(--yt-top, 12px) !important;
+
         right: auto !important;
         bottom: auto !important;
-        left: auto !important;
         transform: none !important;
-        -webkit-transform: translate3d(0,0,0);
       }
 
-      /* Ensure drag handle is large and responsive on mobile */
+      /* Large, responsive touch target for the drag handle */
       #yt-host .yt-drag-handle {
         display: block !important;
         cursor: grab;
         touch-action: none !important;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
         user-select: none;
-        height: 50px !important; /* Even larger touch target */
-        background: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.4));
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+
+        height: 50px !important;
+
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, .9),
+          rgba(0, 0, 0, .4)
+        );
+
         border-radius: 16px 16px 0 0;
         z-index: 10;
-      }
-
-      /* Smooth dragging state on mobile */
-      #yt-host.is-dragging {
-        cursor: grabbing !important;
-        z-index: 9999 !important;
-        pointer-events: auto !important;
-        transition: none !important; /* Remove all transitions during drag */
-        -webkit-transform: translate3d(0,0,0); /* Maintain hardware acceleration */
-        transform: translate3d(0,0,0);
       }
 
       /* Prevent any body scrolling during drag */
@@ -897,14 +893,6 @@
       }
 
       .mobile-video-arrow.is-video-closed { display: none !important; }
-
-      #yt-host {
-        width: min(320px, calc(100vw - 1.5rem)) !important;
-        height: min(180px, calc((100vw - 1.5rem) * .5625)) !important;
-        top: auto;
-        right: .75rem;
-        bottom: 10.5rem;
-      }
 
       body.is-minimal #yt-host {
         width: calc(100vw - 1rem) !important;
@@ -1212,6 +1200,16 @@
       els.ytHost.style.bottom = "auto";
     }
 
+    // Place the player at a position with no slide animation (used when
+    // opening the player so it does not glide in from the corner).
+    function placeYtInstant(x, y) {
+      const prev = els.ytHost.style.transition;
+      els.ytHost.style.transition = "none";
+      setYtPosition(x, y, true);
+      void els.ytHost.offsetWidth; // flush styles so the jump is not animated
+      els.ytHost.style.transition = prev;
+    }
+
     function updateMobileVideoArrow() {
       // Mobile arrow is now permanently hidden, no updates needed
       return;
@@ -1238,98 +1236,131 @@
       setYtPosition(targetX, targetY, true);
     }
 
-    // Mobile-specific drag variables
-    let mobileDragState = null;
+    /* ===== Smooth drag (desktop mouse + mobile touch via Pointer Events) ===== */
+    function startYtDrag(e) {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
 
-    // Enhanced mobile drag functions
-    function startMobileDrag(clientX, clientY) {
       const rect = els.ytHost.getBoundingClientRect();
-      mobileDragState = {
-        startX: clientX,
-        startY: clientY,
-        offsetX: clientX - rect.left,
-        offsetY: clientY - rect.top,
-        initialLeft: rect.left,
-        initialTop: rect.top
+
+      ytDrag = {
+        pointerId: e.pointerId,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top
       };
+
       els.ytHost.classList.add("is-dragging");
       document.body.classList.add("dragging-video");
       els.ytHost.style.transition = "none";
-    }
 
-    function moveMobileDrag(clientX, clientY) {
-      if (!mobileDragState) return;
-      
-      const newX = clientX - mobileDragState.offsetX;
-      const newY = clientY - mobileDragState.offsetY;
-      
-      // Constrain to viewport bounds
-      const margin = 10;
-      const maxX = Math.max(margin, window.innerWidth - els.ytHost.offsetWidth - margin);
-      const maxY = Math.max(margin, window.innerHeight - els.ytHost.offsetHeight - margin);
-      const constrainedX = Math.min(maxX, Math.max(margin, newX));
-      const constrainedY = Math.min(maxY, Math.max(margin, newY));
-      
-      // Apply position immediately for smooth dragging
-      els.ytHost.style.left = `${constrainedX}px`;
-      els.ytHost.style.top = `${constrainedY}px`;
-      els.ytHost.style.right = "auto";
-      els.ytHost.style.bottom = "auto";
-    }
-
-    function endMobileDrag() {
-      if (!mobileDragState) return;
-      
-      mobileDragState = null;
-      els.ytHost.classList.remove("is-dragging");
-      document.body.classList.remove("dragging-video");
-      els.ytHost.style.transition = "";
-      
-      // Snap to nearest edge after drag
-      snapYtToNearestEdge();
-    }
-
-    function startYtDrag(e) {
-      if (e.button !== undefined && e.button !== 0) return;
-      const rect = els.ytHost.getBoundingClientRect();
-      ytDrag = { pointerId: e.pointerId || 1, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
-      els.ytHost.classList.add("is-dragging");
-      
-      // Try to set pointer capture, but don't fail if not supported
       try {
-        els.ytDragHandle.setPointerCapture?.(e.pointerId || 1);
-      } catch (err) {
-        // Ignore capture errors on mobile
-      }
-      
+        els.ytDragHandle.setPointerCapture(e.pointerId);
+      } catch (err) {}
+
       e.preventDefault();
       e.stopPropagation();
     }
 
     function moveYtDrag(e) {
-      if (!ytDrag || (e.pointerId !== undefined && e.pointerId !== ytDrag.pointerId)) return;
-      ytPendingPosition = { x: e.clientX - ytDrag.offsetX, y: e.clientY - ytDrag.offsetY };
+      if (!ytDrag || e.pointerId !== ytDrag.pointerId) return;
+
+      ytPendingPosition = {
+        x: e.clientX - ytDrag.offsetX,
+        y: e.clientY - ytDrag.offsetY
+      };
+
       if (!ytMoveFrame) {
         ytMoveFrame = requestAnimationFrame(() => {
-          if (ytPendingPosition) setYtPosition(ytPendingPosition.x, ytPendingPosition.y, false);
+          if (ytPendingPosition) {
+            const rect = els.ytHost.getBoundingClientRect();
+            const margin = 8;
+
+            const maxX = Math.max(
+              margin,
+              window.innerWidth - rect.width - margin
+            );
+
+            const maxY = Math.max(
+              margin,
+              window.innerHeight - rect.height - margin
+            );
+
+            const x = clamp(ytPendingPosition.x, margin, maxX);
+            const y = clamp(ytPendingPosition.y, margin, maxY);
+
+            els.ytHost.style.left = `${x}px`;
+            els.ytHost.style.top = `${y}px`;
+            els.ytHost.style.right = "auto";
+            els.ytHost.style.bottom = "auto";
+
+            els.ytHost.style.setProperty("--yt-left", `${x}px`);
+            els.ytHost.style.setProperty("--yt-top", `${y}px`);
+          }
+
           ytPendingPosition = null;
           ytMoveFrame = 0;
         });
       }
+
       e.preventDefault();
       e.stopPropagation();
     }
 
     function endYtDrag(e) {
-      if (!ytDrag || (e.pointerId !== undefined && e.pointerId !== ytDrag.pointerId)) return;
-      ytDrag = null;
-      if (ytMoveFrame) cancelAnimationFrame(ytMoveFrame);
-      if (ytPendingPosition) setYtPosition(ytPendingPosition.x, ytPendingPosition.y, false);
-      ytPendingPosition = null;
+      if (!ytDrag || e.pointerId !== ytDrag.pointerId) return;
+
+      if (ytMoveFrame) {
+        cancelAnimationFrame(ytMoveFrame);
+      }
+
       ytMoveFrame = 0;
+
+      if (ytPendingPosition) {
+        const rect = els.ytHost.getBoundingClientRect();
+        const margin = 8;
+
+        const maxX = Math.max(
+          margin,
+          window.innerWidth - rect.width - margin
+        );
+
+        const maxY = Math.max(
+          margin,
+          window.innerHeight - rect.height - margin
+        );
+
+        const x = clamp(ytPendingPosition.x, margin, maxX);
+        const y = clamp(ytPendingPosition.y, margin, maxY);
+
+        els.ytHost.style.left = `${x}px`;
+        els.ytHost.style.top = `${y}px`;
+
+        els.ytHost.style.setProperty("--yt-left", `${x}px`);
+        els.ytHost.style.setProperty("--yt-top", `${y}px`);
+
+        ytPendingPosition = null;
+      }
+
+      ytDrag = null;
+
       els.ytHost.classList.remove("is-dragging");
+      document.body.classList.remove("dragging-video");
+
+      // Re-enable smooth transition after dragging
+      els.ytHost.style.transition = "";
+
+      try {
+        els.ytDragHandle.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+
+      // Snap to nearest screen edge
       snapYtToNearestEdge();
-      updateMobileVideoArrow();
+
+      if (typeof updateMobileVideoArrow === "function") {
+        updateMobileVideoArrow();
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
     }
 
     function minimizeInterface() {
@@ -1373,23 +1404,14 @@
     }
 
     function openYoutubeWindow(position = null) {
+      const isMobile = window.innerWidth <= 760;
+
       // On mobile, add special class to show the video
-      if (window.innerWidth <= 760) {
+      if (isMobile) {
         els.ytHost.classList.add("mobile-video-open");
         // Hide the show video button on mobile
         els.mobileShowVideo.classList.remove("is-video-closed");
         els.mobileShowVideo.classList.add("is-video-open");
-        
-        // Set initial position for mobile if no position specified
-        if (!position) {
-          const centerX = window.innerWidth / 2 - 160; // Half of video width
-          const centerY = window.innerHeight / 2 - 90;  // Half of video height
-          els.ytHost.style.left = `${centerX}px`;
-          els.ytHost.style.top = `${centerY}px`;
-          els.ytHost.style.right = "auto";
-          els.ytHost.style.bottom = "auto";
-          els.ytHost.style.transform = "none";
-        }
       }
       
       els.ytHost.style.display = "block";
@@ -1399,12 +1421,31 @@
       els.ytHost.classList.toggle("is-mobile-open", Boolean(position));
       els.screenOpen.classList.remove("is-video-closed");
       els.screenOpen.textContent = "↗ Open";
+
+      // Mobile: position through --yt-left / --yt-top so dragging stays smooth.
+      // Reuse the last dragged position; centre the player the first time.
+      if (isMobile) {
+        const rect = els.ytHost.getBoundingClientRect();
+        const lastLeft = parseFloat(els.ytHost.style.getPropertyValue("--yt-left"));
+        const lastTop = parseFloat(els.ytHost.style.getPropertyValue("--yt-top"));
+
+        if (position) {
+          placeYtInstant(position.x, position.y);
+        } else if (Number.isFinite(lastLeft) && Number.isFinite(lastTop)) {
+          placeYtInstant(lastLeft, lastTop);
+        } else {
+          placeYtInstant(
+            (window.innerWidth - rect.width) / 2,
+            (window.innerHeight - rect.height) / 2
+          );
+        }
+      }
       
       els.ytHost.classList.add("is-opening");
       requestAnimationFrame(() => {
-        if (position && window.innerWidth > 760) {
+        if (position && !isMobile) {
           setYtPosition(position.x, position.y, true);
-        } else if (!position && window.innerWidth > 760) {
+        } else if (!position && !isMobile) {
           snapYtToNearestEdge();
         }
         requestAnimationFrame(() => els.ytHost.classList.remove("is-opening"));
@@ -1998,45 +2039,11 @@
       setProgress(next, duration);
     });
 
-    // Desktop pointer events
+    // Video drag listeners (Pointer Events work for mouse, touch and pen)
     els.ytDragHandle.addEventListener("pointerdown", startYtDrag);
     els.ytDragHandle.addEventListener("pointermove", moveYtDrag);
     els.ytDragHandle.addEventListener("pointerup", endYtDrag);
     els.ytDragHandle.addEventListener("pointercancel", endYtDrag);
-
-    // Mobile touch events - direct and simple approach
-    els.ytDragHandle.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const touch = e.touches[0];
-      startMobileDrag(touch.clientX, touch.clientY);
-    }, { passive: false });
-
-    // Listen on document for better tracking
-    document.addEventListener("touchmove", (e) => {
-      if (mobileDragState) {
-        e.preventDefault();
-        e.stopPropagation();
-        const touch = e.touches[0];
-        moveMobileDrag(touch.clientX, touch.clientY);
-      }
-    }, { passive: false });
-
-    document.addEventListener("touchend", (e) => {
-      if (mobileDragState) {
-        e.preventDefault();
-        e.stopPropagation();
-        endMobileDrag();
-      }
-    }, { passive: false });
-
-    document.addEventListener("touchcancel", (e) => {
-      if (mobileDragState) {
-        e.preventDefault();
-        e.stopPropagation();
-        endMobileDrag();
-      }
-    }, { passive: false });
 
     els.ytWindowClose.addEventListener("click", closeYoutubeWindow);
     els.screenClose.addEventListener("click", minimizeInterface);
