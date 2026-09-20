@@ -275,6 +275,61 @@
       align-items: center;
     }
 
+    /* Small round speaker sitting on top of the "Load Bengali" button */
+    .bengali-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .speaker-btn {
+      appearance: none;
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 0.4rem);
+      transform: translateX(-50%);
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+      transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease, opacity 140ms ease, transform 140ms ease;
+    }
+
+    .speaker-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .speaker-btn:hover:not(:disabled),
+    .speaker-btn:focus-visible:not(:disabled) {
+      background: #2498ff;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(36, 152, 255, .4);
+    }
+
+    .speaker-btn:active:not(:disabled) { transform: translateX(-50%) scale(0.94); }
+
+    /* Disabled while any music is playing */
+    .speaker-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Disabled because this very track is playing */
+    .speaker-btn.is-playing:disabled {
+      opacity: 1;
+      background: #2498ff;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(36, 152, 255, .45);
+    }
+
     .image-bar input[type="file"] {
       display: none;
     }
@@ -765,6 +820,7 @@
         left: max(1rem, env(safe-area-inset-left));
         right: auto;
         bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 48px + .65rem);
+        animation: showVideoGlow 1.4s ease-in-out infinite; /* blue blinking */
       }
 
       /* Make mobile video button same size as Load Hindi button */
@@ -880,6 +936,10 @@
       .image-bar > div .bar-btn {
         flex: 1; /* Each button takes equal space */
         text-align: center;
+      }
+
+      .image-bar > div .bengali-wrap {
+        flex: 1; /* Keep Load Bengali the same width with the speaker on top */
       }
 
       .github-link {
@@ -1028,6 +1088,7 @@
       .art.is-spinning { animation: none; }
       .screen-all.is-playing img { animation: none; }
       .screen-open.is-video-closed { animation: none; }
+      body.is-minimal .screen-open.is-video-closed { animation: none; }
       .yt-drag-handle,
       .yt-drag-handle::before { animation: none; }
       .brand { animation: none; opacity: 1; transform: translate(-50%, 0); }
@@ -1061,7 +1122,12 @@
             <input id="bgInput" type="file" accept="image/*" />
           </label>
           <button class="bar-btn" id="loadHindi" type="button">Load Hindi</button>
-          <button class="bar-btn" id="loadBengali" type="button">Load Bengali</button>
+          <span class="bengali-wrap">
+            <button class="speaker-btn" id="speakerBtn" type="button" aria-label="Play Kishore Kumar music" title="Play Kishore Kumar music">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg>
+            </button>
+            <button class="bar-btn" id="loadBengali" type="button">Load Bengali</button>
+          </span>
           <button class="bar-btn ghost" id="resetBg" type="button" hidden>Reset image</button>
         </div>
       </div>
@@ -1135,6 +1201,7 @@
     const BG_DB = "kishoreverse-bg";
     const BG_STORE = "background";
     const MAX_BG_EDGE = 1920;
+    const KISHORE_AUDIO_SRC = "./assets/Kishooore_Kumar.mp3";
 
     const $ = (id) => document.getElementById(id);
     const els = {
@@ -1156,6 +1223,7 @@
       bgInput: $("bgInput"),
       loadHindi: $("loadHindi"),
       loadBengali: $("loadBengali"),
+      speakerBtn: $("speakerBtn"),
       resetBg: $("resetBg"),
       ytHost: $("yt-host"),
       ytApiHost: $("yt-api-host"),
@@ -1188,6 +1256,10 @@
     let ytPendingPosition = null;
     let ytWasOpenBeforeMinimal = null;
     let ytPositionBeforeMinimal = null;
+    // Kishore Kumar mp3 (speaker button + play-on-refresh)
+    let ytIsPlaying = false;
+    let kishoreAudio = null;
+    let reloadPlayPending = false;
 
     function clamp(value, min, max) {
       return Math.min(max, Math.max(min, value));
@@ -1565,11 +1637,123 @@
         .toLowerCase();
     }
 
+    /* ===== Kishore Kumar mp3: speaker button + play on page refresh ===== */
+    const RELOAD_GESTURE_EVENTS = ["pointerup", "touchend", "keydown", "click"];
+
+    function isKishoreAudioPlaying() {
+      return Boolean(kishoreAudio && !kishoreAudio.paused && !kishoreAudio.ended);
+    }
+
+    // The speaker is enabled only when no music is playing at all
+    function updateSpeakerState() {
+      const audioOn = isKishoreAudioPlaying();
+      const busy = ytIsPlaying || audioOn;
+      els.speakerBtn.disabled = busy;
+      els.speakerBtn.classList.toggle("is-playing", audioOn);
+      const label = audioOn
+        ? "Kishore Kumar music is playing"
+        : busy
+          ? "Music is playing"
+          : "Play Kishore Kumar music";
+      els.speakerBtn.setAttribute("aria-label", label);
+      els.speakerBtn.title = label;
+    }
+
+    function getKishoreAudio() {
+      if (!kishoreAudio) {
+        kishoreAudio = new Audio(KISHORE_AUDIO_SRC);
+        kishoreAudio.preload = "auto";
+        ["play", "playing", "pause", "ended", "error"].forEach((evt) =>
+          kishoreAudio.addEventListener(evt, updateSpeakerState)
+        );
+      }
+      return kishoreAudio;
+    }
+
+    function removeReloadGestureListeners() {
+      RELOAD_GESTURE_EVENTS.forEach((evt) =>
+        document.removeEventListener(evt, onReloadGesture, true)
+      );
+    }
+
+    function cancelReloadPlay() {
+      reloadPlayPending = false;
+      removeReloadGestureListeners();
+    }
+
+    // Stop the mp3 (used when a YouTube song starts)
+    function stopKishoreAudio() {
+      cancelReloadPlay();
+      if (!kishoreAudio) return;
+      kishoreAudio.pause();
+      try { kishoreAudio.currentTime = 0; } catch { /* ignore */ }
+      updateSpeakerState();
+    }
+
+    function playKishoreAudio() {
+      if (ytIsPlaying) return Promise.resolve(false);
+      const audio = getKishoreAudio();
+      try {
+        const result = audio.play();
+        updateSpeakerState();
+        return Promise.resolve(result)
+          .then(() => true)
+          .catch(() => {
+            updateSpeakerState();
+            return false;
+          });
+      } catch {
+        updateSpeakerState();
+        return Promise.resolve(false);
+      }
+    }
+
+    // Browsers may block sound before the first tap/click. When that happens
+    // after a refresh, the music starts on the visitor's first interaction.
+    function onReloadGesture(e) {
+      if (!reloadPlayPending) {
+        removeReloadGestureListeners();
+        return;
+      }
+      if (ytIsPlaying) {
+        cancelReloadPlay();
+        return;
+      }
+      // The visitor is choosing something else (YouTube controls / speaker)
+      if (e.target?.closest?.(".player, .playlist-bar, #yt-host, #speakerBtn")) return;
+      playKishoreAudio().then((started) => {
+        if (started) cancelReloadPlay();
+      });
+    }
+
+    function isPageReload() {
+      try {
+        const nav = performance.getEntriesByType("navigation")[0];
+        if (nav) return nav.type === "reload";
+      } catch { /* ignore */ }
+      return performance.navigation?.type === 1;
+    }
+
+    function startReloadPlay() {
+      reloadPlayPending = true;
+      playKishoreAudio().then((started) => {
+        if (started) {
+          cancelReloadPlay();
+        } else if (reloadPlayPending) {
+          RELOAD_GESTURE_EVENTS.forEach((evt) =>
+            document.addEventListener(evt, onReloadGesture, true)
+          );
+        }
+      });
+    }
+
     function setPlaying(isPlaying) {
+      ytIsPlaying = isPlaying;
       els.play.classList.toggle("is-playing", isPlaying);
       els.play.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
       els.art.classList.toggle("is-spinning", isPlaying);
       els.screenAll.classList.toggle("is-playing", isPlaying);
+      updateSpeakerState();
     }
 
     function setProgress(current, duration) {
@@ -1639,6 +1823,7 @@
       const index = player.getPlaylistIndex?.() ?? 0;
       const nextIndex = (index + step + playlist.length) % playlist.length;
       wantPlay = true;
+      stopKishoreAudio();
       player.playVideoAt(nextIndex);
       setTimeout(() => {
         if (wantPlay) tryPlay();
@@ -1777,6 +1962,7 @@
     function tryPlay() {
       if (!player || !ready) return;
       wantPlay = true;
+      stopKishoreAudio(); // a YouTube song takes over from the mp3
       try {
         const state = player.getPlayerState();
         if (state === YT.PlayerState.CUED || state === YT.PlayerState.PAUSED || state === YT.PlayerState.UNSTARTED) {
@@ -1878,6 +2064,7 @@
       if (event.data === PLAYING) {
         // A successful track means playlist recovery can start fresh.
         playlistFailedIndexes.clear();
+        if (wantPlay) stopKishoreAudio();
         setPlaying(true);
         refreshMeta();
       } else if (event.data === PAUSED) {
@@ -1977,6 +2164,12 @@
 
     els.loadBengali.addEventListener("click", () => {
       loadNamedPlaylist(BENGALI_PLAYLIST, BENGALI_PLAYLIST_URL, false);
+    });
+
+    els.speakerBtn.addEventListener("click", () => {
+      if (els.speakerBtn.disabled || ytIsPlaying) return;
+      cancelReloadPlay();
+      playKishoreAudio();
     });
 
     els.form.addEventListener("submit", (e) => {
@@ -2104,6 +2297,8 @@
     updateClock();
     setInterval(updateClock, 15000);
     initializeMobileVideo(); // Initialize mobile video state
+    updateSpeakerState();
+    if (isPageReload()) startReloadPlay(); // play the Kishore Kumar mp3 only on refresh
 
     window.onYouTubeIframeAPIReady = createPlayer;
     const tag = document.createElement("script");
