@@ -123,12 +123,6 @@ KISHOREVERSE/
 └── README.md                        # Project documentation
 ```
 
-### Why are there three background images?
-
-- `Kishor_Kumar.png` keeps the **original artwork** exactly as supplied.
-- `Kishor_Kumar_16x9.png` provides a **desktop/browser preview** suitable for the repository README.
-- `kishoreverse-bg.webp` is the **compressed runtime version** used by the website for faster loading.
-
 ---
 
 ## 💻 Run Locally
