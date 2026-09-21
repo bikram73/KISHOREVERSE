@@ -1266,6 +1266,25 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+    /* Mobile: allow a small amount of vertical scrolling so the visitor can
+       scroll a little to see more of the full background artwork, instead
+       of it being tightly cropped to exactly one screen height. Only
+       affects the background scene — everything else is unchanged. */
+    @media (max-width: 760px) {
+      html, body {
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .scene {
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 118dvh;
+      }
+      .scene-bg {
+        width: 100%;
+        height: 100%;
+      }
+    }
   </style>
 </head>
 <body>
