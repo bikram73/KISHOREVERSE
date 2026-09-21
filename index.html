@@ -596,14 +596,16 @@
       background: linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,0));
       border-radius: 16px 0 0 0;
       touch-action: none;
-      animation: dragHandlePulse 1.6s ease-in-out infinite;
     }
 
     .yt-drag-handle::before {
       content: "⋮⋮  Drag player";
+      
       position: absolute;
       left: 11px;
       top: 7px;
+      padding: 3px 9px;
+      border-radius: 999px;
       color: rgba(255,255,255,.86);
       font-size: 10px;
       font-weight: 600;
@@ -613,14 +615,19 @@
       animation: dragLabelPulse 1.6s ease-in-out infinite;
     }
 
-    @keyframes dragHandlePulse {
-      0%, 100% { box-shadow: inset 0 2px 8px rgba(36, 152, 255, .12); }
-      50% { box-shadow: inset 0 2px 14px rgba(36, 152, 255, .62), 0 0 12px rgba(36, 152, 255, .45); }
-    }
-
     @keyframes dragLabelPulse {
-      0%, 100% { color: rgba(255,255,255,.86); text-shadow: 0 1px 3px #000; }
-      50% { color: #9edfff; text-shadow: 0 0 8px rgba(36, 152, 255, .95); }
+      0%, 100% {
+        color: rgba(255,255,255,.86);
+        text-shadow: 0 1px 3px #000;
+        background: rgba(36, 152, 255, .12);
+        box-shadow: 0 0 8px rgba(36, 152, 255, .5), inset 0 0 6px rgba(36, 152, 255, .3);
+      }
+      50% {
+        color: #d6f2ff;
+        text-shadow: 0 0 10px rgba(120, 210, 255, 1), 0 0 2px #fff;
+        background: rgba(36, 152, 255, .3);
+        box-shadow: 0 0 26px rgba(36, 152, 255, 1), 0 0 46px rgba(36, 152, 255, .65), inset 0 0 10px rgba(150, 220, 255, .6);
+      }
     }
 
     .yt-window-close {
