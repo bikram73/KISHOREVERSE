@@ -6,6 +6,8 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 
 ![KISHOREVERSE Preview](./assets/Kishore_Kumar.png)
 
+[![Deploy to GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-yellow?style=for-the-badge&logo=github)](https://github.com/bikram73/KISHOREVERSE)
+
 ---
 
 ## ✨ Features
@@ -100,20 +102,21 @@ No React, Node.js server, database, authentication system, or YouTube Data API k
 KISHOREVERSE/
 ├── .github/
 │   └── workflows/
-│       └── deploy-pages.yml       # GitHub Pages deployment workflow
+│       └── deploy-pages.yml         # GitHub Pages deployment workflow
 │
 ├── assets/
-│   ├── Kishor_Kumar.png           # Original supplied artwork
-│   ├── Kishor_Kumar_16x9.png      # Browser-friendly 16:9 artwork
-│   ├── kishoreverse-bg.webp       # Optimized runtime background
-│   ├── favicon.ico
-│   ├── favicon-32.png
-│   └── apple-touch-icon.png
+│   ├── Kishore_Kumar.png            # Main background artwork
+│   ├── Kishore_Kumar_mobile.png     # Mobile-optimized background
+│   ├── Kishore_Kumar_tab.png        # Tablet-optimized background
+│   ├── Kishore_Kumar_title.png      # Favicon / apple-touch-icon / tile image
+│   ├── Kishore_Kumar_social.jpg     # 1200×630 Open Graph / link-preview image
+│   ├── Kishore_Kumar.mp3            # Intro audio played on page reload
+│   └── Kishore_Kumar.mp4            # Intro video asset
 │
 ├── .gitignore
 ├── .nojekyll
-├── index.html                     # Complete KISHOREVERSE application
-└── README.md                      # Project documentation
+├── index.html                       # Complete KISHOREVERSE application
+└── README.md                        # Project documentation
 ```
 
 ### Why are there three background images?
