@@ -1266,23 +1266,59 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
-    /* Mobile: allow a small amount of vertical scrolling so the visitor can
-       scroll a little to see more of the full background artwork, instead
-       of it being tightly cropped to exactly one screen height. Only
-       affects the background scene — everything else is unchanged. */
+
+    /* ================================================================
+       MOBILE: scrollable full image view
+       Only the background image scrolls (so the visitor can pan up/down
+       to see the full picture instead of the cropped object-fit: cover
+       view). Every other component — top bar, clock, playlist links,
+       player dock, controls, YouTube window — stays fixed in place and
+       does not move when the image is scrolled.
+       ================================================================ */
     @media (max-width: 760px) {
-      html, body {
+      .scene {
         overflow-y: auto;
         overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
       }
-      .scene {
-        position: absolute;
-        inset: 0 0 auto 0;
-        height: 118dvh;
-      }
-      .scene-bg {
+
+      .scene picture {
+        display: block;
         width: 100%;
-        height: 100%;
+        position: relative;
+        z-index: 0;
+      }
+
+      .scene-bg {
+        position: relative !important;
+        inset: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100dvh;
+        object-fit: cover;
+        pointer-events: auto !important;
+      }
+
+      .scene-shade,
+      .top-bar,
+      .player-dock {
+        position: fixed !important;
+      }
+
+      /* Blue scrollbar on the right side */
+      .scene {
+        scrollbar-width: thin;
+        scrollbar-color: #2196f3 rgba(255, 255, 255, 0.08);
+      }
+      .scene::-webkit-scrollbar {
+        width: 8px;
+      }
+      .scene::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .scene::-webkit-scrollbar-thumb {
+        background-color: #2196f3;
+        border-radius: 999px;
       }
     }
   </style>
