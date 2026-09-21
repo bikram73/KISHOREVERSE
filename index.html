@@ -1485,6 +1485,7 @@
     // the Hindi default playlist once the intro has finished).
     let reloadStage = "intro";
     let introAudio = null;
+    let introAutoplayMuted = false; // true once we've had to fall back to muted autoplay
     let hindiAutoplayWhenReady = false;
 
     function clamp(value, min, max) {
@@ -1947,6 +1948,9 @@
         introAudio.src = INTRO_AUDIO_SRC;
         introAudio.load();
         introAudio.addEventListener("ended", () => {
+          introAudio.muted = false;
+          introAutoplayMuted = false;
+          removeUnmuteListeners();
           if (!reloadPlayPending || reloadStage !== "intro") return;
           reloadStage = "hindi";
           attemptReloadStep();
@@ -1955,14 +1959,55 @@
       return introAudio;
     }
 
+    // Mobile browsers (and some desktop ones) block audio with sound from
+    // starting on its own. Muted autoplay, however, is allowed everywhere,
+    // so if unmuted playback is refused we start muted instead and switch
+    // the sound on the instant the visitor makes any contact with the page
+    // (tap, scroll, click, key press) - no extra click needed to "arm" it.
+    const UNMUTE_EVENTS = ["pointerdown", "touchstart", "keydown", "wheel", "scroll", "click"];
+
+    function removeUnmuteListeners() {
+      UNMUTE_EVENTS.forEach((evt) =>
+        document.removeEventListener(evt, unmuteIntroAudio, true)
+      );
+    }
+
+    function addUnmuteListeners() {
+      UNMUTE_EVENTS.forEach((evt) =>
+        document.addEventListener(evt, unmuteIntroAudio, { capture: true, passive: true })
+      );
+    }
+
+    function unmuteIntroAudio() {
+      if (introAutoplayMuted && introAudio) {
+        introAudio.muted = false;
+        introAutoplayMuted = false;
+      }
+      removeUnmuteListeners();
+    }
+
     function playIntroAudio() {
       const audio = getIntroAudio();
+      audio.muted = false;
+      introAutoplayMuted = false;
       try {
         return Promise.resolve(audio.play())
           .then(() => true)
           .catch((err) => {
-            console.warn("Intro audio did not start:", err?.name || err);
-            return false;
+            console.warn("Intro audio blocked with sound, retrying muted:", err?.name || err);
+            audio.muted = true;
+            introAutoplayMuted = true;
+            return Promise.resolve(audio.play())
+              .then(() => {
+                addUnmuteListeners();
+                return true;
+              })
+              .catch((err2) => {
+                console.warn("Intro audio did not start even muted:", err2?.name || err2);
+                audio.muted = false;
+                introAutoplayMuted = false;
+                return false;
+              });
           });
       } catch {
         return Promise.resolve(false);
@@ -1970,8 +2015,11 @@
     }
 
     function stopIntroAudio() {
+      removeUnmuteListeners();
+      introAutoplayMuted = false;
       if (!introAudio) return;
       introAudio.pause();
+      introAudio.muted = false;
       try { introAudio.currentTime = 0; } catch { /* ignore */ }
     }
 
