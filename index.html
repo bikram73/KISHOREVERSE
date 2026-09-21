@@ -1252,14 +1252,15 @@
       background: rgba(0, 0, 0, 0.8);
       color: #fff;
       padding: 8px 18px;
-      border-radius: 999px;
+      border-radius: 16px;
       font-size: 13px;
       letter-spacing: 0.02em;
       z-index: 99999;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s ease, transform 0.25s ease;
-      white-space: nowrap;
+      text-align: center;
+      line-height: 1.4;
     }
     #clickAgainHint.show {
       opacity: 1;
@@ -2532,7 +2533,7 @@
 
       const hint = document.createElement("div");
       hint.id = "clickAgainHint";
-      hint.textContent = "Click once again";
+      hint.innerHTML = "Tap once more<br>to load the playlist";
       document.body.appendChild(hint);
 
       let hideTimer = null;
