@@ -45,7 +45,7 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 
 ## 🎵 Playlists
 
-The project is preconfigured to play the Hindi playlist:
+This is an preconfigured to play the Hindi and Bengali playlist:
 
 **Kishore Kumar — Hindi & Bengali Songs**
 
@@ -246,7 +246,7 @@ The playlist link and embedded media remain hosted by YouTube. KISHOREVERSE does
 
 **KISHOREVERSE** is a fan-made music UI concept celebrating the legacy of **Kishore Kumar** and the timeless Hindi and Bengali music associated with his work.
 
-Built as a static web project with ❤️, 🎶 and a little vintage cinema magic.
+Built as a static web project with ❤️, 🎶 and a little vintage cinema magic of Kishore Kumar.
 
 ---
 
