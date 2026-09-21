@@ -1964,7 +1964,7 @@
     // so if unmuted playback is refused we start muted instead and switch
     // the sound on the instant the visitor makes any contact with the page
     // (tap, scroll, click, key press) - no extra click needed to "arm" it.
-    const UNMUTE_EVENTS = ["pointerdown", "touchstart", "keydown", "wheel", "scroll", "click"];
+    const UNMUTE_EVENTS = ["touchstart", "touchend", "pointerdown", "pointerup", "mousedown", "keydown", "wheel", "scroll", "click"];
 
     function removeUnmuteListeners() {
       UNMUTE_EVENTS.forEach((evt) =>
@@ -1979,11 +1979,19 @@
     }
 
     function unmuteIntroAudio() {
-      if (introAutoplayMuted && introAudio) {
-        introAudio.muted = false;
-        introAutoplayMuted = false;
-      }
       removeUnmuteListeners();
+      if (!introAutoplayMuted || !introAudio) return;
+      introAudio.muted = false;
+      introAutoplayMuted = false;
+      // Some mobile browsers (notably iOS Safari) don't reliably turn sound
+      // back on just because `.muted` was flipped - they only guarantee it
+      // if `play()` itself is re-issued synchronously inside a real user
+      // gesture. So we call it again here, right inside this touch/click
+      // handler, which is exactly what satisfies that requirement.
+      try {
+        const p = introAudio.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      } catch { /* ignore */ }
     }
 
     function playIntroAudio() {
