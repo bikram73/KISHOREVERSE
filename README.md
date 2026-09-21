@@ -8,7 +8,7 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 
 <div align="center">
 
-[![Deploy to GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-yellow?style=for-the-badge&logo=github)](https://github.com/bikram73/KISHOREVERSE)
+[![Deploy to GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-yellow?style=for-the-badge&logo=github)](https://bikram73.github.io/KISHOREVERSE/)
 
 </div>
 
