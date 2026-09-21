@@ -1241,6 +1241,30 @@
       .brand { animation: none; opacity: 1; transform: translate(-50%, 0); }
       .brand::after { animation: none; }
     }
+    /* Top hint banner shown on mobile/tablet after the first tap on
+       Load Hindi / Load Bengali (desktop/laptop instead see the native
+       "Click twice to load" tooltip via the button's title attribute). */
+    #clickAgainHint {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      z-index: 99999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      white-space: nowrap;
+    }
+    #clickAgainHint.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -1273,13 +1297,13 @@
           </span>
           <span class="hindi-wrap">
             <button class="bar-btn tab-show-video is-video-open" id="tabShowVideo" type="button">Show Video</button>
-            <button class="bar-btn" id="loadHindi" type="button">Load Hindi</button>
+            <button class="bar-btn" id="loadHindi" type="button" title="Click twice to load">Load Hindi</button>
           </span>
           <span class="bengali-wrap">
             <button class="speaker-btn" id="speakerBtn" type="button" aria-label="Play Kishore Kumar music" title="Play Kishore Kumar music">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg>
             </button>
-            <button class="bar-btn" id="loadBengali" type="button">Load Bengali</button>
+            <button class="bar-btn" id="loadBengali" type="button" title="Click twice to load">Load Bengali</button>
           </span>
           <button class="bar-btn" id="resetBg" type="button" hidden>Reset image</button>
         </div>
@@ -2496,6 +2520,31 @@
     els.loadBengali.addEventListener("click", () => {
       loadNamedPlaylist(BENGALI_PLAYLIST, BENGALI_PLAYLIST_URL, false);
     });
+
+    // Mobile/tablet hint: devices without real hover can't see the
+    // "Click twice to load" title tooltip, so show a top banner instead
+    // after the first tap on either button.
+    (function setupClickAgainHint() {
+      const supportsHover = window.matchMedia(
+        "(hover: hover) and (pointer: fine)"
+      ).matches;
+      if (supportsHover) return;
+
+      const hint = document.createElement("div");
+      hint.id = "clickAgainHint";
+      hint.textContent = "Click once again";
+      document.body.appendChild(hint);
+
+      let hideTimer = null;
+      function showClickAgainHint() {
+        hint.classList.add("show");
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => hint.classList.remove("show"), 1800);
+      }
+
+      els.loadHindi.addEventListener("click", showClickAgainHint);
+      els.loadBengali.addEventListener("click", showClickAgainHint);
+    })();
 
     els.speakerBtn.addEventListener("click", () => {
       if (els.speakerBtn.disabled || ytIsPlaying) return;
