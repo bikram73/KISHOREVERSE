@@ -2745,7 +2745,14 @@
     // Initialize favicon
     updateResponsiveFavicon();
     
-    if (isPageReload()) startReloadPlay(); // on refresh: play Kishore_Kumar.mp3, then autoplay the Hindi default playlist
+    // Mobile browsers (especially when the site is reopened via pull-to-
+    // refresh, a bookmark, or a home-screen icon) very often don't report
+    // the navigation as type "reload" the way desktop browsers do, so
+    // isPageReload() was silently staying false and this whole flow never
+    // even started on phones. We now start it on every page load - which
+    // is what "every time I refresh" needs in practice - instead of only
+    // on navigations the browser strictly labels as a reload.
+    startReloadPlay(); // play Kishore_Kumar.mp3, then autoplay the Hindi default playlist
 
     window.onYouTubeIframeAPIReady = createPlayer;
     const tag = document.createElement("script");
