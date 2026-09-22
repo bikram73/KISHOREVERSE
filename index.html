@@ -1578,15 +1578,20 @@
 
     // Moves the "Reset image" button so it floats above "Change image" on
     // mobile (matching how "Show Video" floats above "Load Hindi" there),
-    // and keeps it in the normal button row on tablet/desktop.
+    // sits to the left of "Change image" on desktop/laptop, and stays in
+    // its normal row position on tablet.
     function positionResetButton() {
       if (!els.resetBg || !els.changeWrap) return;
-      const isMobile = window.innerWidth <= 760;
-      if (isMobile) {
+      const width = window.innerWidth;
+      if (width <= 760) {
         if (els.resetBg.parentElement !== els.changeWrap) {
           els.changeWrap.appendChild(els.resetBg);
         }
-      } else if (els.resetBg.parentElement !== resetBgHome.parent) {
+      } else if (width >= 1025) {
+        if (els.resetBg.nextElementSibling !== els.changeWrap) {
+          els.changeWrap.parentElement.insertBefore(els.resetBg, els.changeWrap);
+        }
+      } else if (els.resetBg.parentElement !== resetBgHome.parent || els.resetBg.nextSibling !== resetBgHome.next) {
         resetBgHome.parent.insertBefore(els.resetBg, resetBgHome.next);
       }
     }
