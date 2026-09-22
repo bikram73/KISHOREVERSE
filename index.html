@@ -329,6 +329,18 @@
     /* Tablet-only "Show Video" button (shown on top of Load Hindi, see tablet media query) */
     .tab-show-video { display: none; }
 
+    /* .tab-show-video reuses the exact same showVideoGlow pulse animation
+       as the desktop "Show Video" button (.screen-open), but .bar-btn's
+       plain white-pill look (no border, dark text) was covering up the
+       parts of that look the animation itself doesn't control. Matching
+       those here makes the effect look identical to desktop/laptop. */
+    .tab-show-video.is-video-closed {
+      border: 1px solid rgba(255,255,255,.22);
+      color: #fff;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
     /* Small round speaker sitting on top of the "Load Bengali" button */
 
     .speaker-btn {
@@ -1912,10 +1924,10 @@
       els.speakerBtn.disabled = busy;
       els.speakerBtn.classList.toggle("is-playing", audioOn);
       const label = audioOn
-        ? "Kishore Kumar music is playing"
+        ? "Kishore Kumar Intro is playing"
         : busy
           ? "Music is playing"
-          : "Play Kishore Kumar music";
+          : "Play Kishore Kumar Intro";
       els.speakerBtn.setAttribute("aria-label", label);
       els.speakerBtn.title = label;
     }
