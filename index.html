@@ -528,6 +528,7 @@
       margin: 0 0.1rem;
       background: #fff;
       color: var(--ink);
+      position: relative;
       transition: background 180ms ease, color 180ms ease, filter 140ms ease;
     }
 
@@ -549,6 +550,29 @@
     .play .icon-pause { display: none; }
     .play.is-playing .icon-play { display: none; }
     .play.is-playing .icon-pause { display: block; }
+
+    /* Small loading ring shown right on the Play/Pause button's round
+       border while the video or audio is buffering. Hidden by default. */
+    .play .load-bar {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: #fff;
+      border-right-color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease;
+    }
+
+    .play.is-loading .load-bar {
+      opacity: 1;
+      animation: playLoadSpin 0.8s linear infinite;
+    }
+
+    @keyframes playLoadSpin {
+      to { transform: rotate(360deg); }
+    }
 
     /* Floating, draggable YouTube player */
     #yt-host {
@@ -1359,6 +1383,7 @@
           <button class="ctrl play" id="play" type="button" aria-label="Play">
             <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
             <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
+            <span class="load-bar" aria-hidden="true"></span>
           </button>
           <button class="ctrl" id="next" type="button" aria-label="Next song">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6h2v12h-2V6zM6 18l8.5-6L6 6v12z"/></svg>
@@ -2171,6 +2196,12 @@
       updateSpeakerState();
     }
 
+    // Small loading bar next to the Play/Pause button while the YouTube
+    // video/audio is buffering (see onPlayerStateChange).
+    function setLoading(isLoading) {
+      els.play.classList.toggle("is-loading", isLoading);
+    }
+
     function setProgress(current, duration) {
       const pct = duration > 0 ? (current / duration) * 100 : 0;
       els.progressFill.style.width = `${pct}%`;
@@ -2491,6 +2522,10 @@
     function onPlayerStateChange(event) {
       const { PLAYING, PAUSED, ENDED, CUED, BUFFERING } = YT.PlayerState;
 
+      // The small loading bar next to Play/Pause tracks buffering directly,
+      // regardless of which branch below runs for this state change.
+      setLoading(event.data === BUFFERING);
+
       if (event.data === PLAYING) {
         // A successful track means playlist recovery can start fresh.
         playlistFailedIndexes.clear();
@@ -2518,6 +2553,10 @@
       const code = event?.data;
       const index = player.getPlaylistIndex?.() ?? 0;
 
+      // Buffering never finished if we hit an error - clear the small
+      // loading bar so it doesn't keep spinning.
+      setLoading(false);
+
       // 100 = unavailable/private, 101/150 = embedding disabled. These
       // errors can affect only one item in a playlist, so do not kill the
       // whole Bengali/Hindi playlist. Move forward until a playable item
@@ -2529,6 +2568,7 @@
 
       showDetailedPlayError(code);
     }
+
 
     function createPlayer() {
       const playerVars = {
