@@ -2550,6 +2550,13 @@
         refreshMeta();
         tick();
         if (wantPlay) tryPlay();
+      } else if (event.data === UNSTARTED && wantPlay) {
+        // This is the ad-playing period (see the comment above) - let the
+        // person know what's happening instead of leaving the old title
+        // showing. refreshMeta() on the real PLAYING event above restores
+        // the actual song/video info once the ad finishes.
+        els.title.textContent = "Please wait…";
+        els.artist.textContent = "Ad is playing";
       }
     }
 
