@@ -2520,11 +2520,15 @@
     }
 
     function onPlayerStateChange(event) {
-      const { PLAYING, PAUSED, ENDED, CUED, BUFFERING } = YT.PlayerState;
+      const { PLAYING, PAUSED, ENDED, CUED, BUFFERING, UNSTARTED } = YT.PlayerState;
 
       // The small loading bar next to Play/Pause tracks buffering directly,
-      // regardless of which branch below runs for this state change.
-      setLoading(event.data === BUFFERING);
+      // regardless of which branch below runs for this state change. While
+      // a pre-roll/mid-roll ad is playing, the player reports UNSTARTED
+      // rather than PLAYING for the actual content, so we keep the loading
+      // ring visible through that too - it only clears once the real
+      // video/audio genuinely starts playing.
+      setLoading(event.data === BUFFERING || event.data === UNSTARTED);
 
       if (event.data === PLAYING) {
         // A successful track means playlist recovery can start fresh.
