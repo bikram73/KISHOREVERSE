@@ -522,6 +522,18 @@
       fill: currentColor;
     }
 
+    /* 5-second skip (rewind/forward) buttons share the same round "ctrl"
+       shape and blue glow as prev/next/play, just with a slightly smaller
+       icon so the arc + "5" stay readable at this size. */
+    .ctrl-skip svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .ctrl-skip svg text {
+      font-family: "Figtree", sans-serif;
+    }
+
     .play {
       width: 42px;
       height: 42px;
@@ -1380,10 +1392,24 @@
           <button class="ctrl" id="prev" type="button" aria-label="Previous song">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6V6zm3.5 6 8.5 6V6l-8.5 6z"/></svg>
           </button>
+          <button class="ctrl ctrl-skip" id="seekBack" type="button" aria-label="Rewind 5 seconds">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+              <text x="12" y="17.2" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor">5</text>
+            </svg>
+          </button>
           <button class="ctrl play" id="play" type="button" aria-label="Play">
             <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
             <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
             <span class="load-bar" aria-hidden="true"></span>
+          </button>
+          <button class="ctrl ctrl-skip" id="seekForward" type="button" aria-label="Forward 5 seconds">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <g transform="translate(24,0) scale(-1,1)">
+                <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+              </g>
+              <text x="12" y="17.2" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor">5</text>
+            </svg>
           </button>
           <button class="ctrl" id="next" type="button" aria-label="Next song">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6h2v12h-2V6zM6 18l8.5-6L6 6v12z"/></svg>
@@ -1471,6 +1497,8 @@
       play: $("play"),
       prev: $("prev"),
       next: $("next"),
+      seekBack: $("seekBack"),
+      seekForward: $("seekForward"),
       form: $("playlistForm"),
       input: $("playlistInput"),
       scene: document.querySelector(".scene"),
@@ -2726,6 +2754,21 @@
       }
       movePlaylist(1);
     });
+
+    // 5-second skip buttons — work the same way on desktop, laptop, tablet
+    // and mobile since they're plain click listeners (click also fires for
+    // touch taps), and just nudge the current YouTube position.
+    function skipSeconds(delta) {
+      if (!player || !ready) return;
+      const duration = player.getDuration?.() ?? 0;
+      const current = player.getCurrentTime?.() ?? 0;
+      const target = Math.min(duration, Math.max(0, current + delta));
+      player.seekTo(target, true);
+      setProgress(target, duration);
+    }
+
+    els.seekBack.addEventListener("click", () => skipSeconds(-5));
+    els.seekForward.addEventListener("click", () => skipSeconds(5));
 
     els.progress.addEventListener("pointerdown", (e) => {
       if (!ready) return;
