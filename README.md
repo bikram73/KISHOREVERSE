@@ -28,6 +28,7 @@ KISHOREVERSE is a lightweight, browser-based music player inspired by the visual
 - ⏮️ **Previous** and ⏭️ **Next** track controls.
 - ⏪ **Rewind 5 seconds** and ⏩ **Forward 5 seconds** buttons.
 - 🎚️ **Interactive progress bar** with mouse/touch seeking.
+- ⏱️ **Live song timer** under the progress bar — shows the elapsed time and total song length (e.g. `1:23 / 4:05`) on the left and the time remaining (e.g. `-2:42 left`) on the right. It updates while playing, seeking and skipping, and switches to `h:mm:ss` for videos longer than an hour.
 - 💿 **Dynamic YouTube thumbnail** shown as the circular album artwork.
 - 🔄 **Animated spinning artwork** while music is playing.
 - 🕐 **Live clock** in the top-left corner.
@@ -221,6 +222,7 @@ The custom background is resized in the browser before being stored locally, and
 | ⏭️ | Next song |
 | ⏪ / ⏩ | Rewind / forward 5 seconds |
 | 🎚️ Progress bar | Seek through the current song |
+| ⏱️ Timer (below progress bar) | Shows elapsed / total time on the left and time remaining on the right |
 | ⬅️ / ➡️ | Seek backward / forward by 5 seconds when the progress bar is focused |
 | 🔈 Speaker | Play the Kishore Kumar intro audio (available only when nothing else is playing) |
 | 🎵 Hindi / Bengali (top-right) | Open the YouTube playlist in a new tab |
