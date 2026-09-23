@@ -470,6 +470,19 @@
       pointer-events: none;
     }
 
+    /* Time row: elapsed / total on the left, time remaining on the right */
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.32rem;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
     .progress-knob {
       position: absolute;
       top: 50%;
@@ -1442,6 +1455,10 @@
               <div class="progress-fill" id="progressFill"></div>
               <div class="progress-knob" id="progressKnob"></div>
             </div>
+            <div class="time-row" aria-live="off">
+              <span id="timeElapsed">0:00 / 0:00</span>
+              <span id="timeRemaining">-0:00 left</span>
+            </div>
           </div>
         </div>
         <div class="controls">
@@ -1550,6 +1567,8 @@
       progress: $("progress"),
       progressFill: $("progressFill"),
       progressKnob: $("progressKnob"),
+      timeElapsed: $("timeElapsed"),
+      timeRemaining: $("timeRemaining"),
       play: $("play"),
       prev: $("prev"),
       next: $("next"),
@@ -2291,8 +2310,22 @@
       els.play.classList.toggle("is-loading", isLoading);
     }
 
+    function formatTime(seconds) {
+      const total = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      return h > 0
+        ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+        : `${m}:${String(s).padStart(2, "0")}`;
+    }
+
     function setProgress(current, duration) {
       const pct = duration > 0 ? (current / duration) * 100 : 0;
+      const safeDuration = duration > 0 ? duration : 0;
+      const safeCurrent = Math.min(Math.max(0, current || 0), safeDuration || Infinity);
+      els.timeElapsed.textContent = `${formatTime(safeCurrent)} / ${formatTime(safeDuration)}`;
+      els.timeRemaining.textContent = `-${formatTime(Math.max(0, safeDuration - safeCurrent))} left`;
       els.progressFill.style.width = `${pct}%`;
       els.progressKnob.style.left = `${pct}%`;
       els.progress.setAttribute("aria-valuenow", String(Math.round(pct)));
