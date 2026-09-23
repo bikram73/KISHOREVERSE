@@ -178,6 +178,7 @@
     .clock {
       font-size: 0.92rem;
       font-variant-numeric: tabular-nums;
+      transition: opacity 320ms ease, transform 320ms ease;
     }
 
     .brand {
@@ -217,6 +218,7 @@
     .playlist-links {
       display: flex;
       gap: 0.45rem;
+      transition: opacity 320ms ease, transform 320ms ease;
     }
 
     .playlist-link:hover {
@@ -245,6 +247,7 @@
       gap: 0.55rem;
       opacity: 0;
       animation: dockIn 800ms 280ms ease forwards;
+      transition: opacity 320ms ease, transform 320ms ease;
     }
 
     .playlist-bar {
@@ -802,7 +805,9 @@
       font-size: .75rem;
       font-weight: 600;
       box-shadow: 0 14px 40px rgba(0,0,0,.35);
-      transition: transform 180ms ease, background 180ms ease;
+      opacity: 1;
+      transform: scale(1);
+      transition: transform 260ms cubic-bezier(.22,1,.36,1), background 180ms ease, opacity 260ms ease;
     }
 
     .screen-close {
@@ -816,7 +821,10 @@
     }
 
     .screen-all {
-      display: none;
+      display: block;
+      opacity: 0;
+      transform: scale(.85);
+      pointer-events: none;
       left: max(1rem, env(safe-area-inset-left)) !important;
       bottom: max(1rem, env(safe-area-inset-bottom));
       width: 48px;
@@ -882,17 +890,30 @@
     .screen-close:focus-visible { background: #2498ff; box-shadow: 0 0 18px rgba(36, 152, 255, .55); }
 
     body.is-minimal .top-bar .clock,
-    body.is-minimal .top-bar .playlist-links,
-    body.is-minimal .player-dock {
+    body.is-minimal .top-bar .playlist-links {
       opacity: 0 !important;
       pointer-events: none !important;
       transform: translateY(10px);
     }
 
+    body.is-minimal .player-dock {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translateX(-50%) translateY(10px);
+    }
+
     .screen-open.is-video-closed { display: block; }
 
-    body.is-minimal .screen-close { display: none; }
-    body.is-minimal .screen-all { display: block; }
+    body.is-minimal .screen-close {
+      opacity: 0;
+      transform: scale(.85);
+      pointer-events: none;
+    }
+    body.is-minimal .screen-all {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
 
     body.is-minimal #yt-host {
       left: 50% !important;
@@ -1306,6 +1327,14 @@
       .player-dock {
         animation: none;
         opacity: 1;
+      }
+
+      .clock,
+      .playlist-links,
+      .player-dock,
+      .screen-close,
+      .screen-all {
+        transition: none;
       }
 
       .brand::after { animation: none; }
