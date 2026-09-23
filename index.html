@@ -1335,6 +1335,18 @@
       }
     }
 
+    /* Mobile: more compact time row (smaller text, tighter spacing, no "left" word) */
+    @media (max-width: 760px) {
+      .time-row {
+        margin-top: 0.18rem;
+        gap: 0.4rem;
+        font-size: 0.6rem;
+        line-height: 1.1;
+      }
+
+      .time-left-word { display: none; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .brand,
       .player-dock {
@@ -1457,7 +1469,7 @@
             </div>
             <div class="time-row" aria-live="off">
               <span id="timeElapsed">0:00 / 0:00</span>
-              <span id="timeRemaining">-0:00 left</span>
+              <span id="timeRemaining">-0:00<span class="time-left-word"> left</span></span>
             </div>
           </div>
         </div>
@@ -2325,7 +2337,7 @@
       const safeDuration = duration > 0 ? duration : 0;
       const safeCurrent = Math.min(Math.max(0, current || 0), safeDuration || Infinity);
       els.timeElapsed.textContent = `${formatTime(safeCurrent)} / ${formatTime(safeDuration)}`;
-      els.timeRemaining.textContent = `-${formatTime(Math.max(0, safeDuration - safeCurrent))} left`;
+      els.timeRemaining.innerHTML = `-${formatTime(Math.max(0, safeDuration - safeCurrent))}<span class="time-left-word"> left</span>`;
       els.progressFill.style.width = `${pct}%`;
       els.progressKnob.style.left = `${pct}%`;
       els.progress.setAttribute("aria-valuenow", String(Math.round(pct)));
