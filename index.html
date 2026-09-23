@@ -1152,31 +1152,31 @@
 
       .github-link svg { width: 16px; height: 16px; }
 
-      /* Mobile view: show only the GitHub logo by default. The label
-         reappears (animated) once the interface is minimized via the ×
-         button, and hides again (animated) once the round music thumbnail
-         on the left is tapped to restore the full interface. */
+      /* Mobile only: GitHub button is a bit smaller in the normal view.
+         Tapping × (body.is-minimal) returns it to its original size. */
       .github-link {
-        gap: 0;
+        gap: .25rem;
+        padding: .3rem .45rem;
+        font-size: .56rem;
+        transition: transform 180ms ease, background 180ms ease, opacity 260ms ease,
+                    padding 260ms ease, font-size 260ms ease, gap 260ms ease;
       }
 
-      .github-link span {
-        display: inline-block;
-        max-width: 0;
-        opacity: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        transition: max-width 320ms ease, opacity 200ms ease, margin-left 320ms ease;
+      .github-link svg {
+        width: 12px;
+        height: 12px;
+        transition: width 260ms ease, height 260ms ease;
       }
 
       body.is-minimal .github-link {
         gap: .3rem;
+        padding: .45rem .6rem;
+        font-size: .68rem;
       }
 
-      body.is-minimal .github-link span {
-        max-width: 80px;
-        opacity: 1;
-        transition: max-width 320ms ease, opacity 220ms ease 80ms, margin-left 320ms ease;
+      body.is-minimal .github-link svg {
+        width: 16px;
+        height: 16px;
       }
 
       .screen-open {
